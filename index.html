@@ -1208,8 +1208,14 @@ async function pullFromSheets() {
     gMovimenti = cloudMovs;
     localStorage.setItem('mt_movimenti', JSON.stringify(gMovimenti));
     renderMovimenti();
-    aggiornaKPI();
   }
+  // Ricarica anche le spese da Sheets
+  try {
+    await syncAllFromSheets();
+  } catch(e) {}
+  aggiornaKPI();
+  if(typeof aggiornaGrafici === 'function') aggiornaGrafici();
+  setSyncStatus('ok', 'Aggiornato');
 }
 
 function switchGTab(tab){

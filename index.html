@@ -131,11 +131,13 @@ input[type=file]{display:none;}
 /* ===== GESTIONALE ===== */
 .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;}
 .kpi{border-radius:var(--r);padding:1rem;display:flex;flex-direction:column;gap:4px;}
-.kpi.nero{background:var(--border);color:#fff;}
-.kpi.bordeaux{background:#6B1111;color:#fff;}
-.kpi.blu{background:#0D2B4E;color:#fff;}
-.kpi.verde{background:#1A4A1A;color:#fff;}
-.kpi-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;opacity:.75;}
+.kpi.nero{background:#FFF9E6;color:#5a3e1b;border:1.5px solid #f0d080;}
+.kpi.bordeaux{background:#FFE8E8;color:#7a1a1a;border:1.5px solid #f0a0a0;}
+.kpi.blu{background:#E8F0FF;color:#1a3a7a;border:1.5px solid #a0b8f0;}
+.kpi.verde{background:#E8FFE8;color:#1a5a1a;border:1.5px solid #a0d0a0;}
+.kpi.rosa{background:#FFE8F5;color:#7a1a5a;border:1.5px solid #f0a0d0;}
+.kpi.azzurro{background:#E8F8FF;color:#1a5a7a;border:1.5px solid #a0d8f0;}
+.kpi-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;opacity:.8;}
 .kpi-val{font-size:22px;font-weight:500;font-family:'Cormorant Garamond',serif;}
 .kpi-sub{font-size:10px;opacity:.6;}
 .tab-mini{display:flex;border:1.5px solid var(--border);border-radius:var(--rs);overflow:hidden;margin-bottom:1rem;}
@@ -562,6 +564,16 @@ function doGet(e) {
         <div class="kpi-label">Fatturato Totale</div>
         <div class="kpi-val" id="kpi-tot">€ 0</div>
         <div class="kpi-sub">fresco + lavorati fatt.</div>
+      </div>
+      <div class="kpi rosa">
+        <div class="kpi-label">Totale Spese</div>
+        <div class="kpi-val" id="kpi-spese">€ 0</div>
+        <div class="kpi-sub">spese aziendali</div>
+      </div>
+      <div class="kpi azzurro">
+        <div class="kpi-label">Non Fatt. Totale</div>
+        <div class="kpi-val" id="kpi-nftot">€ 0</div>
+        <div class="kpi-sub">fresco + lavorati</div>
       </div>
     </div>
   </div>
@@ -1404,6 +1416,8 @@ function aggiornaKPI(){
   const spTot = (window.gSpese||[]).reduce((a,s)=>a+s.importo,0);
   const kpiSp = document.getElementById('kpi-spese');
   if(kpiSp) kpiSp.textContent = fmt(spTot);
+  const kpiNfTot = document.getElementById('kpi-nftot');
+  if(kpiNfTot) kpiNfTot.textContent = fmt(nf+nl);
   // Update grafici mini KPI too
   const totVend = gMovimenti.filter(x=>x.tipo!=='acquisto').reduce((a,x)=>a+x.totale,0);
   const totAcq = gMovimenti.filter(x=>x.tipo==='acquisto').reduce((a,x)=>a+x.totale,0);

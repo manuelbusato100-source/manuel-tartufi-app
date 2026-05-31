@@ -2149,9 +2149,9 @@ function aggiornaAnalisi() {
   // Raggruppa per varietà
   const map = {};
   vendite.forEach(v => {
-    const vr = v.varieta || 'Altra varietà';
+    const vr = v.nome || 'Altra varietà';
     if (!map[vr]) map[vr] = { kg: 0, incassato: 0, vendite: 0 };
-    map[vr].kg        += parseFloat(v.kg) || 0;
+    map[vr].kg        += parseFloat((v.extra && v.extra.kg) ? v.extra.kg : 0);
     map[vr].incassato += parseFloat(v.totale) || 0;
     map[vr].vendite   += 1;
   });

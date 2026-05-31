@@ -1238,6 +1238,7 @@ async function pullFromSheets() {
   } catch(e) {}
   aggiornaKPI();
   if(typeof aggiornaGrafici === 'function') aggiornaGrafici();
+  if(typeof aggiornaAnalisi === 'function') aggiornaAnalisi();
   setSyncStatus('ok', 'Aggiornato');
 }
 
@@ -2195,7 +2196,7 @@ function aggiornaAnalisi() {
 }
 
 // Aggiorna analisi anche al caricamento
-window.addEventListener('load', () => setTimeout(aggiornaAnalisi, 500));
+window.addEventListener('load', () => setTimeout(aggiornaAnalisi, 3000));
 // ===== END ANALISI =====
 // ===== END GRAFICI =====
 

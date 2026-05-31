@@ -2140,7 +2140,7 @@ function aggiornaAnalisi() {
   if (!container) return;
 
   // Prendi solo vendite fresco
-  const vendite = (window.gMovimenti || []).filter(m => m.tipo === 'vendita');
+  const vendite = (gMovimenti || []).filter(m => m.tipo === 'vendita');
 
   if (vendite.length === 0) {
     container.innerHTML = '<div style="text-align:center;color:var(--text3);padding:2rem;font-size:13px;">Nessun dato disponibile.<br>Registra delle vendite fresco per vedere le statistiche.</div>';

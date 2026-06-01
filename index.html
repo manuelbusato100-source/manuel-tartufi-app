@@ -1523,8 +1523,7 @@ async function syncReadSpese() {
     importo:parseFloat(r[iImp])||0, pag:r[iPag]||'', note:r[iNote]||''
   }));
   if (remote.length > 0) {
-    window.gSpese = remote;
-    gSpese = remote; // sync local variable too
+    gSpese = remote;
     localStorage.setItem('mt_spese', JSON.stringify(remote));
   }
 }
@@ -1542,7 +1541,6 @@ async function syncReadCrediti() {
     totale:parseFloat(r[iTot])||0, tipo:r[iTipo]||'NO', note:r[iNote]||'', stato:r[iStato]||'aperto'
   }));
   if (remote.length > 0) {
-    window.gCrediti = remote;
     gCrediti = remote;
     localStorage.setItem('mt_crediti', JSON.stringify(remote));
   }
@@ -1576,7 +1574,6 @@ async function syncReadFornitori() {
   });
   const remote = Object.values(fornMap);
   if (remote.length > 0) {
-    window.gFornitori = remote;
     gFornitori = remote;
     localStorage.setItem('mt_fornitori', JSON.stringify(remote));
   }

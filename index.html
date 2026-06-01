@@ -1425,7 +1425,7 @@ function aggiornaKPI(){
   document.getElementById('kpi-nfl').textContent = fmt(nl);
   document.getElementById('kpi-acq').textContent = fmt(acq);
   document.getElementById('kpi-tot').textContent = fmt(vf+vl);
-  const spTot = (window.gSpese||[]).reduce((a,s)=>a+s.importo,0);
+  const spTot = (gSpese||[]).reduce((a,s)=>a+s.importo,0);
   const kpiSp = document.getElementById('kpi-spese');
   if(kpiSp) kpiSp.textContent = fmt(spTot);
   const kpiNfTot = document.getElementById('kpi-nftot');
@@ -1882,12 +1882,14 @@ function saveSpesa() {
   if(btn&&btn.tagName==='BUTTON'){const o=btn.innerHTML;btn.innerHTML='<i class="ti ti-check"></i> Registrata!';btn.disabled=true;setTimeout(()=>{btn.innerHTML=o;btn.disabled=false;},1800);}
 }
 
-function deleteSpesa(id) {
+async function deleteSpesa(id) {
   if (!confirm('Eliminare questa spesa?')) return;
   gSpese = gSpese.filter(s => s.id !== id);
   localStorage.setItem('mt_spese', JSON.stringify(gSpese));
   renderSpese();
   aggiornaKPI();
+  // Sincronizza eliminazione su Google Sheets
+  try { await scriptWrite('delete_spesa', { id }); } catch(e) {}
 }
 
 function renderSpese() {
@@ -1994,14 +1996,14 @@ function aggiornaGrafici() {
     const fresco = gMovimenti.filter(x=>x.tipo==='vendita'&&(x.data||'').startsWith(m.key)).reduce((a,x)=>a+x.totale,0);
     const lavorati = gMovimenti.filter(x=>x.tipo==='lavorato'&&(x.data||'').startsWith(m.key)).reduce((a,x)=>a+x.totale,0);
     const acquisti = gMovimenti.filter(x=>x.tipo==='acquisto'&&(x.data||'').startsWith(m.key)).reduce((a,x)=>a+x.totale,0);
-    const spese = (window.gSpese||[]).filter(x=>(x.data||'').startsWith(m.key)).reduce((a,x)=>a+x.importo,0);
+    const spese = (gSpese||[]).filter(x=>(x.data||'').startsWith(m.key)).reduce((a,x)=>a+x.importo,0);
     return { fresco, lavorati, acquisti, spese };
   });
 
   // KPI mini
   const totVendite = gMovimenti.filter(x=>x.tipo!=='acquisto').reduce((a,x)=>a+x.totale,0);
   const totAcquisti = gMovimenti.filter(x=>x.tipo==='acquisto').reduce((a,x)=>a+x.totale,0);
-  const totSpese = (window.gSpese||[]).reduce((a,x)=>a+x.importo,0);
+  const totSpese = (gSpese||[]).reduce((a,x)=>a+x.importo,0);
   const margine = totVendite - totAcquisti - totSpese;
   const nVendite = gMovimenti.filter(x=>x.tipo!=='acquisto').length;
   const mediaVendita = nVendite > 0 ? totVendite / nVendite : 0;
@@ -2057,7 +2059,7 @@ function aggiornaGrafici() {
   const ctxS = document.getElementById('chart-spese');
   const catMap = { carburante: '⛽ Carburante', pasto: '🍽️ Pasti', hotel: '🏨 Hotel', magazzino: '🏭 Magazzino', officina: '🔧 Officina', altro: '📦 Altro' };
   const spesePerCat = {};
-  (window.gSpese||[]).forEach(s => { spesePerCat[s.cat] = (spesePerCat[s.cat]||0) + s.importo; });
+  (gSpese||[]).forEach(s => { spesePerCat[s.cat] = (spesePerCat[s.cat]||0) + s.importo; });
   const catKeys = Object.keys(spesePerCat);
   const catColors = [CHART_GOLD, CHART_NERO, CHART_BLU, CHART_VERDE, CHART_ROSSO, CHART_VIOLA];
   if (ctxS && catKeys.length > 0) {
@@ -2098,8 +2100,8 @@ function aggiornaGrafici() {
   // 5. Crediti aperti vs incassati
   destroyChart('crediti');
   const ctxCR = document.getElementById('chart-crediti');
-  const crAperti = (window.gCrediti||[]).filter(c=>c.stato==='aperto').reduce((a,c)=>a+c.totale,0);
-  const crIncassati = (window.gCrediti||[]).filter(c=>c.stato==='incassato').reduce((a,c)=>a+c.totale,0);
+  const crAperti = (gCrediti||[]).filter(c=>c.stato==='aperto').reduce((a,c)=>a+c.totale,0);
+  const crIncassati = (gCrediti||[]).filter(c=>c.stato==='incassato').reduce((a,c)=>a+c.totale,0);
   if (ctxCR) {
     chartInstances['crediti'] = new Chart(ctxCR, {
       type: 'bar',

@@ -2570,9 +2570,9 @@ function agendaRenderProssimi() {
 }
 
 // Init agenda quando si apre il tab
-const _origGoTab = goTab;
+const _origGoTabAgenda = goTab;
 function goTab(n) {
-  _origGoTab(n);
+  _origGoTabAgenda(n);
   if (n === 'agenda') agendaInit();
 }
 

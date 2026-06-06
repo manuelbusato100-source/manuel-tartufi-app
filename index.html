@@ -736,6 +736,7 @@ function doGet(e) {
       <div class="g-section-tab active" onclick="switchGSection('fornitori')">🏭 Fornitori</div>
       <div class="g-section-tab" onclick="switchGSection('crediti')">💳 Crediti</div>
       <div class="g-section-tab" onclick="switchGSection('spese')">🧾 Spese</div>
+      <div class="g-section-tab" onclick="switchGSection('fatture')">🧾 Fatture</div>
     </div>
 
     <!-- FORNITORI -->
@@ -854,6 +855,51 @@ function doGet(e) {
         <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;opacity:.7;">Totale spese</div>
         <div style="font-size:18px;font-weight:800;font-family:'Jost',sans-serif;" id="spese-totale-val">€ 0</div>
       </div>
+    </div>
+
+    <!-- FATTURE -->
+    <div class="g-section" id="gs-fatture">
+      <div class="card-title"><i class="ti ti-file-invoice"></i>Nuova vendita</div>
+      <div class="form-row">
+        <div class="gfield"><label>Data</label><input type="date" id="ft-data"/></div>
+        <div class="gfield"><label>Cliente</label><input type="text" id="ft-cliente" placeholder="Nome cliente"/></div>
+      </div>
+      <div class="form-row">
+        <div class="gfield"><label>Prodotto / Tipo</label>
+          <select id="ft-tipo">
+            <option value="">Seleziona...</option>
+            <option value="Tartufo Fresco">🍄 Tartufo Fresco</option>
+            <option value="Prodotto Lavorato">🫙 Prodotto Lavorato</option>
+          </select>
+        </div>
+        <div class="gfield"><label>Peso (kg)</label><input type="number" id="ft-peso" placeholder="0.000" step="0.001" oninput="calcFattTotale()"/></div>
+      </div>
+      <div class="form-row">
+        <div class="gfield"><label>Prezzo €/kg</label><input type="number" id="ft-prezzo" placeholder="0.00" step="0.01" oninput="calcFattTotale()"/></div>
+        <div class="gfield"><label>Totale €</label><input type="number" id="ft-totale" placeholder="0.00" readonly style="background:#f9f9f9;"/></div>
+      </div>
+      <div class="form-row">
+        <div class="gfield" style="grid-column:1/-1;">
+          <label>Stato fattura</label>
+          <select id="ft-stato">
+            <option value="da_fare">🔴 Fattura da fare</option>
+            <option value="emessa">✅ Fattura emessa</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-gold" onclick="saveFattura()"><i class="ti ti-device-floppy"></i>Registra vendita</button>
+
+      <!-- Lista fatture da fare -->
+      <div class="section-hdr" style="margin-top:1.25rem;">
+        <span><i class="ti ti-alert-circle" style="font-size:14px;color:#c0392b;"></i>&nbsp;<span style="color:#c0392b;">Fatture da emettere</span></span>
+      </div>
+      <div id="fatture-dafare-list"><div class="empty-g">Nessuna fattura in sospeso 🎉</div></div>
+
+      <!-- Lista tutte -->
+      <div class="section-hdr" style="margin-top:1rem;">
+        <span><i class="ti ti-list" style="font-size:14px;"></i>&nbsp;Tutte le vendite</span>
+      </div>
+      <div id="fatture-list"><div class="empty-g">Nessuna vendita registrata</div></div>
     </div>
   </div>
 
@@ -1656,15 +1702,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // ===== FORNITORI =====
 let gFornitori = JSON.parse(localStorage.getItem('mt_fornitori') || '[]');
 let gCrediti = JSON.parse(localStorage.getItem('mt_crediti') || '[]');
+let gFatture = JSON.parse(localStorage.getItem('mt_fatture') || '[]');
 
 function switchGSection(section) {
   document.querySelectorAll('.g-section-tab').forEach((el,i) => {
-    el.classList.toggle('active', ['movimenti','fornitori','crediti'][i] === section);
+    el.classList.toggle('active', ['fornitori','crediti','spese','fatture'][i] === section);
   });
   document.querySelectorAll('.g-section').forEach(el => el.classList.remove('active'));
   document.getElementById('gs-'+section).classList.add('active');
   if (section === 'fornitori') renderFornitori();
   if (section === 'crediti') renderCrediti();
+  if (section === 'fatture') renderFatture();
 }
 
 function calcFornTotal() {
@@ -2204,6 +2252,108 @@ window.addEventListener('load', () => setTimeout(aggiornaAnalisi, 3000));
 // ===== END GRAFICI =====
 
 // ===== END GESTIONALE =====
+
+// ===== FATTURE =====
+function calcFattTotale() {
+  const peso = parseFloat(document.getElementById('ft-peso').value)||0;
+  const prezzo = parseFloat(document.getElementById('ft-prezzo').value)||0;
+  document.getElementById('ft-totale').value = (peso * prezzo).toFixed(2);
+}
+
+function saveFattura() {
+  const cliente = document.getElementById('ft-cliente').value.trim();
+  const tipo = document.getElementById('ft-tipo').value;
+  const peso = parseFloat(document.getElementById('ft-peso').value)||0;
+  const prezzo = parseFloat(document.getElementById('ft-prezzo').value)||0;
+  const totale = parseFloat(document.getElementById('ft-totale').value)||0;
+  const stato = document.getElementById('ft-stato').value;
+  let data = document.getElementById('ft-data').value;
+
+  if (!cliente) { alert('Inserisci il nome del cliente'); return; }
+  if (!tipo) { alert('Seleziona il tipo di prodotto'); return; }
+  if (peso <= 0 || prezzo <= 0) { alert('Inserisci peso e prezzo'); return; }
+  if (!data) data = new Date().toISOString().split('T')[0];
+
+  const ft = {
+    id: 'ft_' + Date.now(),
+    data, cliente, tipo, peso, prezzo, totale, stato
+  };
+
+  gFatture.unshift(ft);
+  localStorage.setItem('mt_fatture', JSON.stringify(gFatture));
+
+  // Reset form
+  ['ft-cliente','ft-peso','ft-prezzo','ft-totale'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ft-tipo').selectedIndex = 0;
+  document.getElementById('ft-stato').selectedIndex = 0;
+  document.getElementById('ft-data').value = '';
+
+  renderFatture();
+  showToast('Vendita registrata!');
+}
+
+function toggleFattura(id) {
+  const ft = gFatture.find(f => f.id === id);
+  if (!ft) return;
+  ft.stato = ft.stato === 'da_fare' ? 'emessa' : 'da_fare';
+  localStorage.setItem('mt_fatture', JSON.stringify(gFatture));
+  renderFatture();
+}
+
+function deleteFattura(id) {
+  if (!confirm('Eliminare questa vendita?')) return;
+  gFatture = gFatture.filter(f => f.id !== id);
+  localStorage.setItem('mt_fatture', JSON.stringify(gFatture));
+  renderFatture();
+}
+
+function renderFatture() {
+  const listEl = document.getElementById('fatture-list');
+  const daFareEl = document.getElementById('fatture-dafare-list');
+  if (!listEl || !daFareEl) return;
+
+  const daFare = gFatture.filter(f => f.stato === 'da_fare');
+  const fmt = v => '€ ' + parseFloat(v).toFixed(2);
+  const fmtData = d => d ? d.split('-').reverse().join('/') : '-';
+
+  // Lista "da fare"
+  if (!daFare.length) {
+    daFareEl.innerHTML = '<div class="empty-g">Nessuna fattura in sospeso 🎉</div>';
+  } else {
+    daFareEl.innerHTML = daFare.map(f => `
+      <div style="background:#fff5f5;border:1.5px solid #f5c6c6;border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:13px;color:#c0392b;">🔴 ${f.cliente}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;">${f.tipo} · ${f.peso} kg · ${fmtData(f.data)}</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text1);margin-top:2px;">${fmt(f.totale)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <button class="btn-sm" onclick="toggleFattura('${f.id}')" title="Segna come emessa" style="background:#27ae60;color:#fff;border:none;">✅</button>
+          <button class="btn-sm" onclick="deleteFattura('${f.id}')" style="color:#c0392b;">🗑️</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // Lista tutte
+  if (!gFatture.length) {
+    listEl.innerHTML = '<div class="empty-g">Nessuna vendita registrata</div>';
+  } else {
+    listEl.innerHTML = gFatture.map(f => `
+      <div style="border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;opacity:${f.stato==='emessa'?'0.6':'1'}">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:13px;">${f.stato==='da_fare'?'🔴':'✅'} ${f.cliente}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;">${f.tipo} · ${f.peso} kg · €${f.prezzo}/kg · ${fmtData(f.data)}</div>
+          <div style="font-size:14px;font-weight:700;margin-top:2px;">${fmt(f.totale)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <button class="btn-sm" onclick="toggleFattura('${f.id}')">${f.stato==='da_fare'?'✅':'🔴'}</button>
+          <button class="btn-sm" onclick="deleteFattura('${f.id}')" style="color:#c0392b;">🗑️</button>
+        </div>
+      </div>`).join('');
+  }
+}
+// ===== END FATTURE =====
+
 </script>
 </body>
 </html>

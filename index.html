@@ -864,17 +864,20 @@ function doGet(e) {
         <div class="gfield"><label>Data</label><input type="date" id="ft-data"/></div>
         <div class="gfield"><label>Cliente</label><input type="text" id="ft-cliente" placeholder="Nome cliente"/></div>
       </div>
-
-      <!-- RIGHE PRODOTTI -->
-      <div id="ft-righe-container"></div>
-      <button class="btn-sm" onclick="addRigaFattura()" style="margin:.5rem 0 1rem;color:var(--gold);border-color:var(--gold);width:100%;"><i class="ti ti-plus"></i> Aggiungi prodotto</button>
-
-      <!-- TOTALE -->
-      <div style="background:var(--bg2);border-radius:var(--rs);padding:10px 14px;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);">Totale fattura</span>
-        <span style="font-size:18px;font-weight:800;font-family:'Jost',sans-serif;" id="ft-totale-display">€ 0.00</span>
+      <div class="form-row">
+        <div class="gfield"><label>Prodotto / Tipo</label>
+          <select id="ft-tipo">
+            <option value="">Seleziona...</option>
+            <option value="Tartufo Fresco">🍄 Tartufo Fresco</option>
+            <option value="Prodotto Lavorato">🫙 Prodotto Lavorato</option>
+          </select>
+        </div>
+        <div class="gfield"><label>Peso (kg)</label><input type="number" id="ft-peso" placeholder="0.000" step="0.001" oninput="calcFattTotale()"/></div>
       </div>
-
+      <div class="form-row">
+        <div class="gfield"><label>Prezzo €/kg</label><input type="number" id="ft-prezzo" placeholder="0.00" step="0.01" oninput="calcFattTotale()"/></div>
+        <div class="gfield"><label>Totale €</label><input type="number" id="ft-totale" placeholder="0.00" readonly style="background:#f9f9f9;"/></div>
+      </div>
       <div class="form-row">
         <div class="gfield" style="grid-column:1/-1;">
           <label>Stato fattura</label>
@@ -897,7 +900,6 @@ function doGet(e) {
         <span><i class="ti ti-list" style="font-size:14px;"></i>&nbsp;Tutte le vendite</span>
       </div>
       <div id="fatture-list"><div class="empty-g">Nessuna vendita registrata</div></div>
-    </div>
     </div>
   </div>
 
@@ -1444,7 +1446,7 @@ function renderMovimenti(){
     const badge = `<span class="badge-f ${m.fatturato==='SI'?'si':'no'}">${m.fatturato}</span>`;
     const fmt = m.extra && m.extra.formato ? ' · '+m.extra.formato : '';
     return `<div class="mov">
-      <div class="mov-dot ${m.tipo}"></div>
+      ${m.tipo === 'acquisto' ? '<i class="ti ti-box" style="font-size:14px;color:#E74C3C;flex-shrink:0;"></i>' : '<div class="mov-dot ' + m.tipo + '"></div>'}
       <div class="mov-info">
         <div class="mov-name">${m.nome}${fmt}${badge}</div>
         <div class="mov-meta">${m.data||'—'} · ${tipoLabel}${sub ? ' · '+sub : ''}</div>
@@ -2252,98 +2254,39 @@ window.addEventListener('load', () => setTimeout(aggiornaAnalisi, 3000));
 // ===== END GESTIONALE =====
 
 // ===== FATTURE =====
-let ftRigaCount = 0;
-
-function addRigaFattura(tipo='', peso='', prezzo='') {
-  ftRigaCount++;
-  const id = ftRigaCount;
-  const container = document.getElementById('ft-righe-container');
-  const div = document.createElement('div');
-  div.id = 'ft-riga-' + id;
-  div.style.cssText = 'border:1px solid var(--border);border-radius:var(--rs);padding:10px;margin-bottom:8px;position:relative;';
-  div.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-      <span style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);">Prodotto ${id}</span>
-      ${id>1?`<button class="btn-sm" onclick="removeRigaFattura(${id})" style="color:#c0392b;padding:2px 6px;">✕</button>`:''}
-    </div>
-    <div class="form-row">
-      <div class="gfield" style="grid-column:1/-1;">
-        <label>Prodotto / Tipo</label>
-        <select id="ft-tipo-${id}" onchange="ricalcolaTotale()">
-          <option value="">Seleziona...</option>
-          <option value="Tartufo Fresco" ${tipo==='Tartufo Fresco'?'selected':''}>🍄 Tartufo Fresco</option>
-          <option value="Prodotto Lavorato" ${tipo==='Prodotto Lavorato'?'selected':''}>🫙 Prodotto Lavorato</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="gfield"><label>Peso (kg)</label><input type="number" id="ft-peso-${id}" value="${peso}" placeholder="0.000" step="0.001" oninput="ricalcolaTotale()"/></div>
-      <div class="gfield"><label>Prezzo €/kg</label><input type="number" id="ft-prezzo-${id}" value="${prezzo}" placeholder="0.00" step="0.01" oninput="ricalcolaTotale()"/></div>
-    </div>
-    <div style="text-align:right;font-size:12px;color:var(--text2);">Subtotale: <strong id="ft-sub-${id}">€ 0.00</strong></div>
-  `;
-  container.appendChild(div);
-  ricalcolaTotale();
-}
-
-function removeRigaFattura(id) {
-  document.getElementById('ft-riga-' + id).remove();
-  ricalcolaTotale();
-}
-
-function ricalcolaTotale() {
-  let tot = 0;
-  document.querySelectorAll('[id^="ft-peso-"]').forEach(el => {
-    const id = el.id.split('-')[2];
-    const peso = parseFloat(el.value)||0;
-    const prezzo = parseFloat(document.getElementById('ft-prezzo-'+id)?.value)||0;
-    const sub = peso * prezzo;
-    tot += sub;
-    const subEl = document.getElementById('ft-sub-'+id);
-    if (subEl) subEl.textContent = '€ ' + sub.toFixed(2);
-  });
-  document.getElementById('ft-totale-display').textContent = '€ ' + tot.toFixed(2);
+function calcFattTotale() {
+  const peso = parseFloat(document.getElementById('ft-peso').value)||0;
+  const prezzo = parseFloat(document.getElementById('ft-prezzo').value)||0;
+  document.getElementById('ft-totale').value = (peso * prezzo).toFixed(2);
 }
 
 function saveFattura() {
   const cliente = document.getElementById('ft-cliente').value.trim();
+  const tipo = document.getElementById('ft-tipo').value;
+  const peso = parseFloat(document.getElementById('ft-peso').value)||0;
+  const prezzo = parseFloat(document.getElementById('ft-prezzo').value)||0;
+  const totale = parseFloat(document.getElementById('ft-totale').value)||0;
   const stato = document.getElementById('ft-stato').value;
   let data = document.getElementById('ft-data').value;
-  if (!data) data = new Date().toISOString().split('T')[0];
 
   if (!cliente) { alert('Inserisci il nome del cliente'); return; }
-
-  // Raccogli righe
-  const righe = [];
-  document.querySelectorAll('[id^="ft-peso-"]').forEach(el => {
-    const id = el.id.split('-')[2];
-    const tipo = document.getElementById('ft-tipo-'+id)?.value || '';
-    const peso = parseFloat(el.value)||0;
-    const prezzo = parseFloat(document.getElementById('ft-prezzo-'+id)?.value)||0;
-    if (tipo && peso > 0 && prezzo > 0) {
-      righe.push({ tipo, peso, prezzo, subtotale: parseFloat((peso*prezzo).toFixed(2)) });
-    }
-  });
-
-  if (!righe.length) { alert('Aggiungi almeno un prodotto con peso e prezzo'); return; }
-
-  const totale = righe.reduce((a, r) => a + r.subtotale, 0);
+  if (!tipo) { alert('Seleziona il tipo di prodotto'); return; }
+  if (peso <= 0 || prezzo <= 0) { alert('Inserisci peso e prezzo'); return; }
+  if (!data) data = new Date().toISOString().split('T')[0];
 
   const ft = {
     id: 'ft_' + Date.now(),
-    data, cliente, righe, totale: parseFloat(totale.toFixed(2)), stato
+    data, cliente, tipo, peso, prezzo, totale, stato
   };
 
   gFatture.unshift(ft);
   localStorage.setItem('mt_fatture', JSON.stringify(gFatture));
 
   // Reset form
-  document.getElementById('ft-cliente').value = '';
-  document.getElementById('ft-data').value = '';
+  ['ft-cliente','ft-peso','ft-prezzo','ft-totale'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ft-tipo').selectedIndex = 0;
   document.getElementById('ft-stato').selectedIndex = 0;
-  document.getElementById('ft-righe-container').innerHTML = '';
-  ftRigaCount = 0;
-  addRigaFattura();
+  document.getElementById('ft-data').value = '';
 
   renderFatture();
   showToast('Vendita registrata!');
@@ -2372,55 +2315,43 @@ function renderFatture() {
   const daFare = gFatture.filter(f => f.stato === 'da_fare');
   const fmt = v => '€ ' + parseFloat(v).toFixed(2);
   const fmtData = d => d ? d.split('-').reverse().join('/') : '-';
-  const fmtRighe = righe => {
-    if (!righe) return '';
-    return righe.map(r => `<span style="display:inline-block;background:var(--bg2);border-radius:4px;padding:1px 6px;margin:1px;font-size:10px;">${r.tipo} · ${r.peso}kg · €${r.prezzo}/kg</span>`).join('');
-  };
 
+  // Lista "da fare"
   if (!daFare.length) {
     daFareEl.innerHTML = '<div class="empty-g">Nessuna fattura in sospeso 🎉</div>';
   } else {
     daFareEl.innerHTML = daFare.map(f => `
-      <div style="background:#fff5f5;border:1.5px solid #f5c6c6;border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <div style="flex:1;min-width:0;">
-            <div style="font-weight:600;font-size:13px;color:#c0392b;">🔴 ${f.cliente} · ${fmtData(f.data)}</div>
-            <div style="margin-top:4px;">${fmtRighe(f.righe)}</div>
-            <div style="font-size:15px;font-weight:800;color:var(--text1);margin-top:4px;">${fmt(f.totale)}</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:4px;">
-            <button class="btn-sm" onclick="toggleFattura('${f.id}')" style="background:#27ae60;color:#fff;border:none;">✅</button>
-            <button class="btn-sm" onclick="deleteFattura('${f.id}')" style="color:#c0392b;">🗑️</button>
-          </div>
+      <div style="background:#fff5f5;border:1.5px solid #f5c6c6;border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:13px;color:#c0392b;">🔴 ${f.cliente}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;">${f.tipo} · ${f.peso} kg · ${fmtData(f.data)}</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text1);margin-top:2px;">${fmt(f.totale)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <button class="btn-sm" onclick="toggleFattura('${f.id}')" title="Segna come emessa" style="background:#27ae60;color:#fff;border:none;">✅</button>
+          <button class="btn-sm" onclick="deleteFattura('${f.id}')" style="color:#c0392b;">🗑️</button>
         </div>
       </div>`).join('');
   }
 
+  // Lista tutte
   if (!gFatture.length) {
     listEl.innerHTML = '<div class="empty-g">Nessuna vendita registrata</div>';
   } else {
     listEl.innerHTML = gFatture.map(f => `
-      <div style="border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;margin-bottom:6px;opacity:${f.stato==='emessa'?'0.6':'1'}">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <div style="flex:1;min-width:0;">
-            <div style="font-weight:600;font-size:13px;">${f.stato==='da_fare'?'🔴':'✅'} ${f.cliente} · ${fmtData(f.data)}</div>
-            <div style="margin-top:4px;">${fmtRighe(f.righe)}</div>
-            <div style="font-size:15px;font-weight:800;margin-top:4px;">${fmt(f.totale)}</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:4px;">
-            <button class="btn-sm" onclick="toggleFattura('${f.id}')">${f.stato==='da_fare'?'✅':'🔴'}</button>
-            <button class="btn-sm" onclick="deleteFattura('${f.id}')" style="color:#c0392b;">🗑️</button>
-          </div>
+      <div style="border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;opacity:${f.stato==='emessa'?'0.6':'1'}">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:13px;">${f.stato==='da_fare'?'🔴':'✅'} ${f.cliente}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;">${f.tipo} · ${f.peso} kg · €${f.prezzo}/kg · ${fmtData(f.data)}</div>
+          <div style="font-size:14px;font-weight:700;margin-top:2px;">${fmt(f.totale)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <button class="btn-sm" onclick="toggleFattura('${f.id}')">${f.stato==='da_fare'?'✅':'🔴'}</button>
+          <button class="btn-sm" onclick="deleteFattura('${f.id}')" style="color:#c0392b;">🗑️</button>
         </div>
       </div>`).join('');
   }
 }
-
-// Init: aggiungi prima riga e init render
-document.addEventListener('DOMContentLoaded', () => {
-  addRigaFattura();
-  renderFatture();
-});
 // ===== END FATTURE =====
 
 </script>

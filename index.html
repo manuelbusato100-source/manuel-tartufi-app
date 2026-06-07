@@ -579,6 +579,11 @@ function doGet(e) {
         <div class="kpi-val" id="kpi-nftot">€ 0</div>
         <div class="kpi-sub">fresco + lavorati</div>
       </div>
+      <div class="kpi" style="grid-column:1/-1;background:#FFFDE7;border:2px solid #F9C825;">
+        <div class="kpi-label" style="color:#B8963E;">Totale Generale Vendite</div>
+        <div class="kpi-val" id="kpi-gentot" style="font-size:26px;color:#1A1814;">€ 0</div>
+        <div class="kpi-sub" style="color:#888;">fatturato + non fatturato</div>
+      </div>
     </div>
   </div>
 
@@ -1446,7 +1451,7 @@ function renderMovimenti(){
     const badge = `<span class="badge-f ${m.fatturato==='SI'?'si':'no'}">${m.fatturato}</span>`;
     const fmt = m.extra && m.extra.formato ? ' · '+m.extra.formato : '';
     return `<div class="mov">
-      ${m.tipo === 'acquisto' ? '<i class="ti ti-box" style="font-size:14px;color:#E74C3C;flex-shrink:0;"></i>' : '<div class="mov-dot ' + m.tipo + '"></div>'}
+      <div class="mov-dot ${m.tipo}"></div>
       <div class="mov-info">
         <div class="mov-name">${m.nome}${fmt}${badge}</div>
         <div class="mov-meta">${m.data||'—'} · ${tipoLabel}${sub ? ' · '+sub : ''}</div>
@@ -1475,6 +1480,7 @@ function aggiornaKPI(){
   document.getElementById('kpi-nfl').textContent = fmt(nl);
   document.getElementById('kpi-acq').textContent = fmt(acq);
   document.getElementById('kpi-tot').textContent = fmt(vf+vl);
+  document.getElementById('kpi-gentot').textContent = fmt(vf+vl+nf+nl);
   const spTot = (gSpese||[]).reduce((a,s)=>a+s.importo,0);
   const kpiSp = document.getElementById('kpi-spese');
   if(kpiSp) kpiSp.textContent = fmt(spTot);

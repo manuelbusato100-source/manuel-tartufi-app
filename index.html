@@ -163,6 +163,7 @@ input[type=file]{display:none;}
 .mov-info{flex:1;min-width:0;}
 .mov-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mov-meta{font-size:10px;color:#1a1814;margin-top:1px;}
+.mov-detail{font-size:10px;color:var(--text3);margin-top:1px;}
 .mov-amt{font-size:12px;font-weight:500;white-space:nowrap;}
 .mov-amt.pos{color:#27AE60;}
 .mov-amt.neg{color:#E74C3C;}
@@ -1443,18 +1444,35 @@ function renderMovimenti(){
     sb.style.display = 'none';
     return;
   }
-  const recent = gMovimenti.slice(0,30);
+  const recent = [...gMovimenti].sort((a,b) => {
+    const da = a.data || '';
+    const db = b.data || '';
+    if(da !== db) return db.localeCompare(da);
+    return b.id - a.id;
+  }).slice(0,30);
   el.innerHTML = recent.map(m => {
     const isAcq = m.tipo === 'acquisto';
     const tipoLabel = isAcq ? 'Acquisto' : (m.tipo==='lavorato' ? 'Vendita Lavorato' : 'Vendita Fresco');
-    const sub = m.extra ? (m.extra.cliente || m.extra.fornitore || '') : '';
+    const persona = m.extra ? (m.extra.cliente || m.extra.fornitore || '') : '';
+    const titolo = persona || m.nome;
     const badge = `<span class="badge-f ${m.fatturato==='SI'?'si':'no'}">${m.fatturato}</span>`;
     const fmt = m.extra && m.extra.formato ? ' · '+m.extra.formato : '';
+    const isLav = m.tipo === 'lavorato';
+    const peso = m.extra ? parseFloat(isLav ? m.extra.qty : m.extra.kg) || 0 : 0;
+    const unitLabel = isLav ? 'pz' : 'kg';
+    let dettaglio = `${m.nome}${fmt}`;
+    if(peso > 0){
+      const prezzoUnit = m.totale / peso;
+      dettaglio += ` · ${peso} ${unitLabel} · €${prezzoUnit.toFixed(2)}/${unitLabel} · €${m.totale.toFixed(2)}`;
+    } else {
+      dettaglio += ` · €${m.totale.toFixed(2)}`;
+    }
     return `<div class="mov">
       <div class="mov-dot ${m.tipo}"></div>
       <div class="mov-info">
-        <div class="mov-name">${m.nome}${fmt}${badge}</div>
-        <div class="mov-meta">${m.data||'—'} · ${tipoLabel}${sub ? ' · '+sub : ''}</div>
+        <div class="mov-name">${titolo}${badge}</div>
+        <div class="mov-meta">${m.data||'—'} · ${tipoLabel}</div>
+        <div class="mov-detail">${dettaglio}</div>
       </div>
       <div class="mov-amt ${isAcq?'neg':'pos'}">${isAcq?'−':'+'}€${m.totale.toFixed(2)}</div>
       <button class="mov-del" onclick="deleteMovimento(${m.id})" title="Elimina">×</button>

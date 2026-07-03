@@ -1463,9 +1463,7 @@ function renderMovimenti(){
     let dettaglio = `${m.nome}${fmt}`;
     if(peso > 0){
       const prezzoUnit = m.totale / peso;
-      dettaglio += ` · ${peso} ${unitLabel} · €${prezzoUnit.toFixed(2)}/${unitLabel} · €${m.totale.toFixed(2)}`;
-    } else {
-      dettaglio += ` · €${m.totale.toFixed(2)}`;
+      dettaglio += ` · ${peso} ${unitLabel} · €${prezzoUnit.toFixed(2)}/${unitLabel}`;
     }
     return `<div class="mov">
       <div class="mov-dot ${m.tipo}"></div>

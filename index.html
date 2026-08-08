@@ -160,6 +160,7 @@ input[type=file]{display:none;}
 .mov-dot.vendita{background:#27AE60;}
 .mov-dot.lavorato{background:#B8963E;}
 .mov-dot.acquisto{background:#E74C3C;}
+.mov-dot.funghi{background:#7A5C3E;}
 .mov-info{flex:1;min-width:0;}
 .mov-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mov-meta{font-size:10px;color:#1a1814;margin-top:1px;}
@@ -594,6 +595,7 @@ function doGet(e) {
     <div class="tab-mini" id="gTabMini">
       <div class="active" onclick="switchGTab('vendita')">Vendita Fresco</div>
       <div onclick="switchGTab('lavorato')">Vendita Lavorato</div>
+      <div onclick="switchGTab('funghi')">Vendita Funghi</div>
       <div onclick="switchGTab('acquisto')">Acquisto</div>
     </div>
 
@@ -678,6 +680,38 @@ function doGet(e) {
         <div class="gfield" style="grid-column:1/-1;"><label>N° Fattura</label><input type="text" id="gl-nfatt" placeholder="opzionale"/></div>
       </div>
       <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('lavorato')"><i class="ti ti-device-floppy"></i>Registra vendita</button>
+    </div>
+
+    <!-- VENDITA FUNGHI -->
+    <div class="gform-panel" id="gp-funghi">
+      <div class="form-row">
+        <div class="gfield"><label>Data</label><input type="date" id="gf-data"/></div>
+        <div class="gfield"><label>Cliente</label><input type="text" id="gf-cliente" placeholder="Nome cliente"/></div>
+      </div>
+      <div class="form-row">
+        <div class="gfield"><label>Varietà</label>
+          <select id="gf-varieta">
+            <option value="">Seleziona...</option>
+            <option>Porcini</option>
+            <option>Finferli</option>
+            <option>Barboni</option>
+            <option>Trombette Nere</option>
+            <option>Ovoli</option>
+          </select>
+        </div>
+        <div class="gfield"><label>Kg venduti</label><input type="number" id="gf-kg" placeholder="0.000" step="0.001" oninput="calcFTotal()"/></div>
+      </div>
+      <div class="form-row">
+        <div class="gfield"><label>Prezzo €/kg netto</label><input type="number" id="gf-prezzo" placeholder="0.00" step="0.01" oninput="calcFTotal()"/></div>
+        <div class="gfield"><label>Totale netto €</label><input type="number" id="gf-totale" placeholder="0.00" step="0.01" readonly/></div>
+      </div>
+      <div class="form-row">
+        <div class="gfield"><label>Fatturato?</label>
+          <select id="gf-fatt"><option value="SI">SI</option><option value="NO">NO</option></select>
+        </div>
+        <div class="gfield"><label>N° Fattura</label><input type="text" id="gf-nfatt" placeholder="opzionale"/></div>
+      </div>
+      <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('funghi')"><i class="ti ti-device-floppy"></i>Registra vendita</button>
     </div>
 
     <!-- ACQUISTO -->
@@ -1302,7 +1336,7 @@ async function pullFromSheets() {
 
 function switchGTab(tab){
   gTabNow = tab;
-  const labels = ['vendita','lavorato','acquisto'];
+  const labels = ['vendita','lavorato','funghi','acquisto'];
   document.getElementById('gTabMini').querySelectorAll('div').forEach((el,i) => {
     el.classList.toggle('active', labels[i] === tab);
   });
@@ -1312,12 +1346,17 @@ function switchGTab(tab){
 
 function setToday(){
   const t = new Date().toISOString().split('T')[0];
-  ['gv-data','gl-data','ga-data'].forEach(id => {
+  ['gv-data','gl-data','gf-data','ga-data'].forEach(id => {
     const el = document.getElementById(id);
     if(el && !el.value) el.value = t;
   });
 }
 
+function calcFTotal(){
+  const kg = parseFloat(document.getElementById('gf-kg').value)||0;
+  const p  = parseFloat(document.getElementById('gf-prezzo').value)||0;
+  document.getElementById('gf-totale').value = (kg*p).toFixed(2);
+}
 function calcVTotal(){
   const kg = parseFloat(document.getElementById('gv-kg').value)||0;
   const p  = parseFloat(document.getElementById('gv-prezzo').value)||0;
@@ -1379,6 +1418,27 @@ function saveMovimento(tipo){
     };
     ['gl-cliente','gl-qty','gl-prezzo','gl-totale','gl-nfatt'].forEach(id => document.getElementById(id).value='');
     document.getElementById('gl-prodotto').selectedIndex=0;
+  }
+
+  else if(tipo === 'funghi'){
+    const varieta = document.getElementById('gf-varieta').value;
+    const totale  = parseFloat(document.getElementById('gf-totale').value)||0;
+    if(!varieta){ alert('Seleziona la varietà'); return; }
+    if(totale <= 0){ alert('Inserisci kg e prezzo'); return; }
+    mov = {
+      id: Date.now(), tipo: 'funghi',
+      data: document.getElementById('gf-data').value,
+      nome: varieta,
+      totale,
+      fatturato: document.getElementById('gf-fatt').value,
+      extra: {
+        cliente: document.getElementById('gf-cliente').value.trim(),
+        kg: document.getElementById('gf-kg').value,
+        nfatt: document.getElementById('gf-nfatt').value.trim()
+      }
+    };
+    ['gf-cliente','gf-kg','gf-prezzo','gf-totale','gf-nfatt'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('gf-varieta').selectedIndex=0;
   }
 
   else if(tipo === 'acquisto'){
@@ -1454,7 +1514,7 @@ function renderMovimenti(){
   }).slice(0,30);
   el.innerHTML = recent.map(m => {
     const isAcq = m.tipo === 'acquisto';
-    const tipoLabel = isAcq ? 'Acquisto' : (m.tipo==='lavorato' ? 'Vendita Lavorato' : 'Vendita Fresco');
+    const tipoLabel = isAcq ? 'Acquisto' : (m.tipo==='lavorato' ? 'Vendita Lavorato' : (m.tipo==='funghi' ? 'Vendita Funghi' : 'Vendita Fresco'));
     const persona = m.extra ? (m.extra.cliente || m.extra.fornitore || '') : '';
     const titolo = persona || m.nome;
     const badge = `<span class="badge-f ${m.fatturato==='SI'?'si':'no'}">${m.fatturato}</span>`;
@@ -1486,9 +1546,9 @@ function renderMovimenti(){
 
 function aggiornaKPI(){
   const sum = (arr) => arr.reduce((a,m) => a+m.totale, 0);
-  const vf  = sum(gMovimenti.filter(m => m.tipo==='vendita'  && m.fatturato==='SI'));
+  const vf  = sum(gMovimenti.filter(m => (m.tipo==='vendita'||m.tipo==='funghi') && m.fatturato==='SI'));
   const vl  = sum(gMovimenti.filter(m => m.tipo==='lavorato' && m.fatturato==='SI'));
-  const nf  = sum(gMovimenti.filter(m => m.tipo==='vendita'  && m.fatturato==='NO'));
+  const nf  = sum(gMovimenti.filter(m => (m.tipo==='vendita'||m.tipo==='funghi') && m.fatturato==='NO'));
   const nl  = sum(gMovimenti.filter(m => m.tipo==='lavorato' && m.fatturato==='NO'));
   const acq = sum(gMovimenti.filter(m => m.tipo==='acquisto'));
   const fmt = v => '€ '+v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,'.');

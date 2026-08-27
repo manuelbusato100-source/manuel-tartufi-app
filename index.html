@@ -197,7 +197,7 @@ input[type=file]{display:none;}
 .doc-info{min-width:0;}
 .doc-nome{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .doc-meta{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
-.doc-actions{display:flex;gap:6px;flex-shrink:0;}
+.doc-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;}
 .doc-btn{border:1.5px solid var(--border);background:#fff;color:var(--text);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;border-radius:6px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px;}
 .doc-btn:hover{background:var(--gold-dim);border-color:var(--gold);}
 .doc-btn.primary{background:var(--border);color:#fff;}
@@ -1894,6 +1894,7 @@ function renderDocumenti() {
         </div>
         <div class="doc-actions">
           <a class="doc-btn" href="${d.link}" target="_blank" rel="noopener"><i class="ti ti-eye"></i>Apri</a>
+          <a class="doc-btn" href="${driveDownloadLink(d.link)}" target="_blank" rel="noopener"><i class="ti ti-download"></i>Scarica</a>
           <button id="share-btn-${idx}" class="doc-btn primary" onclick="condividiDocumento(${idx})"><i class="ti ti-share-2"></i>Condividi</button>
         </div>
       </div>`;

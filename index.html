@@ -1787,30 +1787,59 @@ function driveDownloadLink(url) {
   const id = driveFileId(url);
   return id ? `https://drive.google.com/uc?export=download&id=${id}` : url;
 }
+// Endpoint alternativo (Drive API v3) che spesso gestisce meglio il CORS
+// rispetto al vecchio link "uc?export=download".
+function driveApiDownloadLink(url) {
+  const id = driveFileId(url);
+  return id ? `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${SHEETS_CONFIG.apiKey}` : null;
+}
+
+// Prova a scaricare il blob del PDF da più fonti, nell'ordine.
+// Ritorna il Blob se una fonte funziona, altrimenti null.
+async function fetchPdfBlob(d) {
+  const candidates = [driveApiDownloadLink(d.link), driveDownloadLink(d.link)].filter(Boolean);
+  for (const url of candidates) {
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) continue;
+      const blob = await resp.blob();
+      // Un blob troppo piccolo o non-PDF è quasi certamente una pagina di errore/HTML
+      if (blob.size > 1000) return blob;
+    } catch (e) {
+      console.warn('Fonte download fallita:', url, e);
+    }
+  }
+  return null;
+}
 
 // Condivide il PDF vero e proprio (non solo il link) tramite il menu nativo
 // di condivisione del telefono, così su WhatsApp/Mail arriva come allegato.
+// Se non riesce a scaricare il file (CORS/rete), condivide comunque il link
+// tramite lo stesso menu nativo invece di aprire una scheda separata.
 async function condividiDocumento(idx) {
   const d = gDocumenti[idx];
   if (!d) return;
-  const dlUrl = driveDownloadLink(d.link);
   const btn = document.getElementById('share-btn-' + idx);
   const originalHtml = btn ? btn.innerHTML : '';
   if (btn) { btn.innerHTML = '<i class="ti ti-loader-2"></i>Preparazione...'; btn.style.pointerEvents = 'none'; }
   try {
-    const resp = await fetch(dlUrl);
-    if (!resp.ok) throw new Error('Download fallito');
-    const blob = await resp.blob();
-    const nomeFile = (d.nome || 'documento').replace(/[\\/:*?"<>|]+/g, '_') + '.pdf';
-    const file = new File([blob], nomeFile, { type: 'application/pdf' });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: d.nome });
+    const blob = await fetchPdfBlob(d);
+    if (blob) {
+      const nomeFile = (d.nome || 'documento').replace(/[\\/:*?"<>|]+/g, '_') + '.pdf';
+      const file = new File([blob], nomeFile, { type: 'application/pdf' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: d.nome });
+        return;
+      }
+    }
+    // Fallback: condividi almeno il link tramite il menu nativo
+    if (navigator.share) {
+      await navigator.share({ title: d.nome, url: d.link });
     } else {
-      throw new Error('Condivisione file non supportata su questo browser');
+      window.open(d.link, '_blank');
     }
   } catch (e) {
-    console.warn('Condivisione diretta non riuscita, apro il download:', e);
-    window.open(dlUrl, '_blank');
+    if (e && e.name !== 'AbortError') console.warn('Condivisione non riuscita:', e);
   } finally {
     if (btn) { btn.innerHTML = originalHtml; btn.style.pointerEvents = ''; }
   }

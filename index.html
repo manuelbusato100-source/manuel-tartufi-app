@@ -1785,6 +1785,34 @@ function driveDownloadLink(url) {
   return id ? `https://drive.google.com/uc?export=download&id=${id}` : url;
 }
 
+// Condivide il PDF vero e proprio (non solo il link) tramite il menu nativo
+// di condivisione del telefono, così su WhatsApp/Mail arriva come allegato.
+async function condividiDocumento(idx) {
+  const d = gDocumenti[idx];
+  if (!d) return;
+  const dlUrl = driveDownloadLink(d.link);
+  const btn = document.getElementById('share-btn-' + idx);
+  const originalHtml = btn ? btn.innerHTML : '';
+  if (btn) { btn.innerHTML = '<i class="ti ti-loader-2"></i>Preparazione...'; btn.style.pointerEvents = 'none'; }
+  try {
+    const resp = await fetch(dlUrl);
+    if (!resp.ok) throw new Error('Download fallito');
+    const blob = await resp.blob();
+    const nomeFile = (d.nome || 'documento').replace(/[\\/:*?"<>|]+/g, '_') + '.pdf';
+    const file = new File([blob], nomeFile, { type: 'application/pdf' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: d.nome });
+    } else {
+      throw new Error('Condivisione file non supportata su questo browser');
+    }
+  } catch (e) {
+    console.warn('Condivisione diretta non riuscita, apro il download:', e);
+    window.open(dlUrl, '_blank');
+  } finally {
+    if (btn) { btn.innerHTML = originalHtml; btn.style.pointerEvents = ''; }
+  }
+}
+
 async function syncReadDocumenti() {
   const rows = await sheetsReadSheet(SHEET_DOCUMENTI);
   if (!rows || rows.length <= 1) return;
@@ -1825,7 +1853,7 @@ function renderDocumenti() {
   Object.keys(gruppi).forEach(tipo => {
     html += `<div class="doc-group-title">${tipo}</div>`;
     gruppi[tipo].forEach(d => {
-      const dl = driveDownloadLink(d.link);
+      const idx = gDocumenti.indexOf(d);
       html += `
       <div class="doc-item">
         <div class="doc-info">
@@ -1834,7 +1862,7 @@ function renderDocumenti() {
         </div>
         <div class="doc-actions">
           <a class="doc-btn" href="${d.link}" target="_blank" rel="noopener"><i class="ti ti-eye"></i>Apri</a>
-          <a class="doc-btn primary" href="${dl}" target="_blank" rel="noopener"><i class="ti ti-download"></i>Scarica</a>
+          <button id="share-btn-${idx}" class="doc-btn primary" onclick="condividiDocumento(${idx})"><i class="ti ti-share-2"></i>Condividi</button>
         </div>
       </div>`;
     });

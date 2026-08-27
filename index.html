@@ -203,6 +203,13 @@ input[type=file]{display:none;}
 .doc-btn.primary{background:var(--border);color:#fff;}
 .doc-group-title{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin:1rem 0 .5rem;}
 .doc-group-title:first-child{margin-top:0;}
+.qr-overlay{display:none;position:fixed;inset:0;background:rgba(26,24,20,.75);z-index:200;align-items:center;justify-content:center;padding:1.25rem;}
+.qr-overlay.open{display:flex;}
+.qr-card{background:#fff;border-radius:var(--r);padding:1.5rem;max-width:320px;width:100%;text-align:center;position:relative;}
+.qr-close{position:absolute;top:8px;right:12px;background:none;border:none;font-size:22px;line-height:1;color:var(--text3);cursor:pointer;}
+.qr-titolo{font-size:13px;font-weight:500;margin-bottom:1rem;padding-right:1.5rem;}
+.qr-img{width:100%;max-width:240px;height:auto;border:1px solid var(--border-light);border-radius:8px;}
+.qr-hint{font-size:11px;color:var(--text3);margin-top:.75rem;}
 @media(max-width:480px){
   .doc-item{flex-direction:column;align-items:stretch;}
   .doc-info{width:100%;}
@@ -1041,6 +1048,16 @@ function doGet(e) {
   </div>
 </div>
 
+<!-- MODAL QR CODE DOCUMENTO -->
+<div id="qr-overlay" class="qr-overlay" onclick="if(event.target===this) chiudiQR()">
+  <div class="qr-card">
+    <button class="qr-close" onclick="chiudiQR()">&times;</button>
+    <div id="qr-titolo" class="qr-titolo"></div>
+    <img id="qr-img" class="qr-img" src="" alt="QR code"/>
+    <div class="qr-hint">Inquadra con la fotocamera del telefono</div>
+  </div>
+</div>
+
 <div class="footer">Manuel Tartufi &mdash; v1.7 · Full Sync</div>
 
 
@@ -1864,6 +1881,19 @@ async function syncReadDocumenti() {
   localStorage.setItem('mt_documenti', JSON.stringify(remote));
 }
 
+// Mostra un QR code a schermo intero per far scansionare il documento al cliente
+function apriQR(idx) {
+  const d = gDocumenti[idx];
+  if (!d) return;
+  const qrApi = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(d.link);
+  document.getElementById('qr-titolo').textContent = d.nome;
+  document.getElementById('qr-img').src = qrApi;
+  document.getElementById('qr-overlay').classList.add('open');
+}
+function chiudiQR() {
+  document.getElementById('qr-overlay').classList.remove('open');
+}
+
 function renderDocumenti() {
   const list = document.getElementById('documenti-list');
   const status = document.getElementById('documenti-status');
@@ -1895,6 +1925,7 @@ function renderDocumenti() {
         <div class="doc-actions">
           <a class="doc-btn" href="${d.link}" target="_blank" rel="noopener"><i class="ti ti-eye"></i>Apri</a>
           <a class="doc-btn" href="${driveDownloadLink(d.link)}" target="_blank" rel="noopener"><i class="ti ti-download"></i>Scarica</a>
+          <button class="doc-btn" onclick="apriQR(${idx})"><i class="ti ti-qrcode"></i>QR</button>
           <button id="share-btn-${idx}" class="doc-btn primary" onclick="condividiDocumento(${idx})"><i class="ti ti-share-2"></i>Condividi</button>
         </div>
       </div>`;

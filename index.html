@@ -45,7 +45,10 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);font-w
 /* NAV TABS */
 .nav{display:flex;border-bottom:1.5px solid var(--border);border-top:2px solid var(--gold);background:#fff;position:fixed;top:110px;left:0;right:0;z-index:99;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .nav::-webkit-scrollbar{display:none;}
-.ntab{flex:0 0 auto;min-width:78px;padding:13px 10px;text-align:center;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);cursor:pointer;border-bottom:2.5px solid transparent;transition:all .2s;white-space:nowrap;}
+.ntab{flex:1 1 auto;min-width:78px;padding:13px 10px;text-align:center;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);cursor:pointer;border-bottom:2.5px solid transparent;transition:all .2s;white-space:nowrap;}
+@media(max-width:640px){
+  .ntab{flex:0 0 auto;}
+}
 .ntab i{display:block;font-size:18px;margin-bottom:3px;}
 .ntab.active{color:var(--gold);border-bottom-color:var(--gold);}
 

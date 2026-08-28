@@ -2260,6 +2260,41 @@ async function generaLocandina() {
     oakBranches.forEach(([bx, by, angle, len, color, mirror]) => {
       drawOakBranch(bx, by, angle, len, color, mirror);
     });
+
+    // Funghetti stilizzati (sagoma classica a ombrello), solo per la categoria Funghi
+    if (p.categoria === 'Funghi') {
+      const drawMushroom = (x, y, size, color, rotation) => {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(rotation);
+        ctx.globalAlpha = 0.4;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(-size, 0);
+        ctx.quadraticCurveTo(-size, -size * 1.1, 0, -size * 1.1);
+        ctx.quadraticCurveTo(size, -size * 1.1, size, 0);
+        ctx.quadraticCurveTo(0, size * 0.25, -size, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillRect(-size * 0.22, 0, size * 0.44, size * 0.85);
+        ctx.beginPath();
+        ctx.ellipse(0, size * 0.85, size * 0.26, size * 0.12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      };
+      const mushroomColor = '#B98C82';
+      const mushroomSpots = [
+        [W * 0.09, H * 0.15, 22, 0.15],
+        [W * 0.05, H * 0.3, 16, -0.2],
+        [W * 0.08, H * 0.62, 20, 0.1],
+        [W * 0.05, H * 0.78, 15, -0.15],
+        [W * 0.92, H * 0.18, 20, -0.1],
+        [W * 0.95, H * 0.34, 15, 0.2],
+        [W * 0.9, H * 0.6, 22, -0.15],
+        [W * 0.94, H * 0.76, 16, 0.1]
+      ];
+      mushroomSpots.forEach(([mx, my, msize, mrot]) => drawMushroom(mx, my, msize, mushroomColor, mrot));
+    }
     ctx.globalAlpha = 1;
 
     // Bordo oro, sopra allo sfondo decorativo

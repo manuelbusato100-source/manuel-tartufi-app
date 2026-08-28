@@ -2192,8 +2192,15 @@ async function generaLocandina() {
 
     // Prezzo
     ctx.fillStyle = BLACK;
-    ctx.font = '700 90px "Cormorant Garamond", serif';
-    const prezzoTesto = '\u20ac ' + parseFloat(prezzo).toFixed(2).replace('.', ',');
+    const prezzoValore = parseFloat(prezzo).toFixed(2).replace('.', ',');
+    const prezzoTesto = p.categoria === 'Funghi' ? ('\u20ac/KG ' + prezzoValore) : ('\u20ac ' + prezzoValore);
+    let prezzoSize = 90;
+    ctx.font = `700 ${prezzoSize}px "Cormorant Garamond", serif`;
+    const maxPrezzoW = W - 260;
+    while (ctx.measureText(prezzoTesto).width > maxPrezzoW && prezzoSize > 40) {
+      prezzoSize -= 4;
+      ctx.font = `700 ${prezzoSize}px "Cormorant Garamond", serif`;
+    }
     ctx.fillText(prezzoTesto, W / 2, titleY + 140);
 
     // Timbro rotondo con la quantit\u00e0 (Fresco/Funghi), accanto al prezzo
@@ -2213,13 +2220,19 @@ async function generaLocandina() {
       ctx.arc(0, 0, stampR - 7, 0, Math.PI * 2);
       ctx.stroke();
       ctx.fillStyle = '#9CAF88';
-      ctx.font = '700 15px Jost, sans-serif';
       ctx.textAlign = 'center';
-      ctx.letterSpacing = '1px';
-      ctx.fillText('PREZZO A', 0, -8);
-      ctx.font = '700 30px "Cormorant Garamond", serif';
-      ctx.letterSpacing = '0px';
-      ctx.fillText(qta.toUpperCase(), 0, 26);
+      if (p.categoria === 'Funghi') {
+        ctx.font = '700 26px "Cormorant Garamond", serif';
+        ctx.letterSpacing = '0px';
+        ctx.fillText('\u00d7' + qta.toUpperCase(), 0, 10);
+      } else {
+        ctx.font = '700 15px Jost, sans-serif';
+        ctx.letterSpacing = '1px';
+        ctx.fillText('PREZZO A', 0, -8);
+        ctx.font = '700 30px "Cormorant Garamond", serif';
+        ctx.letterSpacing = '0px';
+        ctx.fillText(qta.toUpperCase(), 0, 26);
+      }
       ctx.restore();
     }
 
@@ -2230,21 +2243,28 @@ async function generaLocandina() {
       const [y, m, d] = iso.split('-');
       return `${d}/${m}/${y}`;
     };
-    const dettagli = [
-      p.categoria ? `CATEGORIA: ${p.categoria}` : '',
-      origine ? `ORIGINE: ${origine}` : '',
-      raccolta ? `RACCOLTA DEL: ${formatDataIt(raccolta)}` : '',
-      scadenza ? `OFFERTA VALIDA FINO AL: ${formatDataIt(scadenza)}` : ''
-    ].filter(Boolean);
+    const isFunghi = p.categoria === 'Funghi';
+    const righe = [];
+    if (p.categoria) {
+      righe.push({ text: `CATEGORIA: ${p.categoria}`, color: BLACK, font: '600 21px Jost, sans-serif' });
+      if (isFunghi) {
+        righe.push({ text: 'CATEGORY: Mushrooms', color: '#9CAF88', font: '500 18px Jost, sans-serif' });
+        righe.push({ text: '\u7c7b\u522b\uff1a\u83cc\u83c7', color: '#B8A27A', font: '500 20px "Cormorant Garamond", "Noto Sans SC", sans-serif' });
+      }
+    }
+    if (origine) righe.push({ text: `ORIGINE: ${origine}`, color: BLACK, font: '600 21px Jost, sans-serif' });
+    if (raccolta) righe.push({ text: `RACCOLTA DEL: ${formatDataIt(raccolta)}`, color: BLACK, font: '600 21px Jost, sans-serif' });
+    if (scadenza) righe.push({ text: `OFFERTA VALIDA FINO AL: ${formatDataIt(scadenza)}`, color: BLACK, font: '600 21px Jost, sans-serif' });
+
     const lineH = 32;
     const footerTopY = H - 18 - 90;
     const blockCenterY = (blockTop + footerTopY) / 2;
-    let dettagliY = blockCenterY - ((dettagli.length - 1) * lineH) / 2;
-    ctx.fillStyle = BLACK;
-    ctx.font = '600 21px Jost, sans-serif';
+    let dettagliY = blockCenterY - ((righe.length - 1) * lineH) / 2;
     ctx.textAlign = 'center';
-    dettagli.forEach((riga) => {
-      ctx.fillText(riga, W / 2, dettagliY);
+    righe.forEach((r) => {
+      ctx.fillStyle = r.color;
+      ctx.font = r.font;
+      ctx.fillText(r.text, W / 2, dettagliY);
       dettagliY += lineH;
     });
 

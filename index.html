@@ -2122,6 +2122,39 @@ async function generaLocandina() {
     ctx.lineWidth = 1;
     ctx.strokeRect(18, 18, W - 36, H - 36);
 
+    // Foglie decorative pastello sullo sfondo, dietro al testo
+    const drawPastelLeaves = () => {
+      const palette = ['#BFE3C0', '#F6E3B4', '#F3C9C6', '#C7DEDD', '#DCC9E8'];
+      const leafCount = 16;
+      for (let i = 0; i < leafCount; i++) {
+        const lx = 40 + Math.random() * (W - 80);
+        const ly = 40 + Math.random() * (H - 80);
+        const size = 34 + Math.random() * 46;
+        const angle = Math.random() * Math.PI * 2;
+        const color = palette[i % palette.length];
+        ctx.save();
+        ctx.translate(lx, ly);
+        ctx.rotate(angle);
+        ctx.globalAlpha = 0.32;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(0, -size / 2);
+        ctx.bezierCurveTo(size / 2, -size / 2, size / 2, size / 2, 0, size / 2);
+        ctx.bezierCurveTo(-size / 2, size / 2, -size / 2, -size / 2, 0, -size / 2);
+        ctx.fill();
+        ctx.globalAlpha = 0.4;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(0, -size / 2 + 4);
+        ctx.lineTo(0, size / 2 - 4);
+        ctx.stroke();
+        ctx.restore();
+      }
+      ctx.globalAlpha = 1;
+    };
+    drawPastelLeaves();
+
     // Logo a sinistra
     const logoImg = document.querySelector('.header-logo');
     let logoRight = 45;

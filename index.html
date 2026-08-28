@@ -278,6 +278,7 @@ input[type=file]{display:none;}
   <div class="ntab" onclick="goTab('grafici')" id="t-grafici"><i class="ti ti-chart-pie"></i>Grafici</div>
   <div class="ntab" onclick="goTab('analisi')" id="t-analisi"><i class="ti ti-plant"></i>Analisi</div>
   <div class="ntab" onclick="goTab('documenti')" id="t-documenti"><i class="ti ti-files"></i>Documenti</div>
+  <div class="ntab" onclick="goTab('offerte')" id="t-offerte"><i class="ti ti-tag"></i>Offerte</div>
 </nav>
 
 <!-- TAB SCHEDA -->
@@ -1049,6 +1050,37 @@ function doGet(e) {
   </div>
 </div>
 
+<!-- TAB OFFERTE -->
+<div class="tab" id="tab-offerte">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-tag"></i>Crea Offerta</div>
+    <div id="offerte-status" style="font-size:11px;color:var(--text2);margin-bottom:.75rem;">Caricamento prodotti...</div>
+    <div class="field">
+      <label>Prodotto</label>
+      <select id="off-prodotto" onchange="offerteProdottoChange()"><option value="">-- Seleziona --</option></select>
+    </div>
+    <div class="field">
+      <label>Prezzo (&euro;)</label>
+      <input type="number" id="off-prezzo" step="0.01" placeholder="Es. 12.90"/>
+    </div>
+    <div class="field" id="off-qta-field" style="display:none;">
+      <label>Quantit&agrave;</label>
+      <input type="text" id="off-qta" placeholder="Es. 250g / 1kg"/>
+    </div>
+    <button class="btn-gold" onclick="generaLocandina()"><i class="ti ti-photo"></i>Genera Locandina</button>
+  </div>
+
+  <div class="card" id="offerta-preview-card" style="display:none;">
+    <div class="card-title"><i class="ti ti-eye"></i>Anteprima</div>
+    <canvas id="off-canvas" width="800" height="1200" style="width:100%;height:auto;border:1px solid var(--border-light);border-radius:8px;"></canvas>
+    <div class="doc-actions" style="margin-top:.75rem;justify-content:center;">
+      <a id="off-apri" class="doc-btn" href="#" target="_blank" rel="noopener"><i class="ti ti-eye"></i>Apri</a>
+      <a id="off-scarica" class="doc-btn" href="#" download="offerta.pdf"><i class="ti ti-download"></i>Scarica</a>
+      <button id="off-condividi" class="doc-btn primary" onclick="condividiOfferta()"><i class="ti ti-share-2"></i>Condividi</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL QR CODE DOCUMENTO -->
 <div id="qr-overlay" class="qr-overlay" onclick="if(event.target===this) chiudiQR()">
   <div class="qr-card">
@@ -1060,6 +1092,8 @@ function doGet(e) {
 </div>
 
 <div class="footer">Manuel Tartufi &mdash; v1.7 · Full Sync</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 
 <script>
@@ -1239,6 +1273,7 @@ const SHEET_SPESE = 'Spese';
 const SHEET_FORNITORI = 'Fornitori';
 const SHEET_CREDITI = 'Crediti';
 const SHEET_DOCUMENTI = 'Documenti';
+const SHEET_OFFERTE = 'Offerte';
 const HDR_SPESE = ['ID','Data','Categoria','Importo €','Pagamento','Descrizione','DELETED'];
 const HDR_FORNITORI = ['ID','Nome','Telefono','Varietà','Zona','DataFattura','NFattura','Kg','Totale €','StatoFattura','DELETED'];
 const HDR_CREDITI = ['ID','Data','Cliente','Totale €','Tipo','Note','Stato','DELETED'];
@@ -1782,12 +1817,13 @@ async function syncReadFornitori() {
 // Sync completa all'avvio
 async function syncAllFromSheets() {
   setSyncStatus('syncing', 'Sincronizzazione...');
-  await Promise.all([syncReadSpese(), syncReadCrediti(), syncReadFornitori(), syncReadDocumenti()]);
+  await Promise.all([syncReadSpese(), syncReadCrediti(), syncReadFornitori(), syncReadDocumenti(), syncReadOfferte()]);
   setSyncStatus('ok', 'Sincronizzato');
   renderSpese && renderSpese();
   renderCrediti && renderCrediti();
   renderFornitori && renderFornitori();
   renderDocumenti && renderDocumenti();
+  renderOfferteSelect && renderOfferteSelect();
   aggiornaKPI && aggiornaKPI();
   aggiornaGrafici && aggiornaGrafici();
 }
@@ -1939,7 +1975,241 @@ function renderDocumenti() {
 window.addEventListener('load', () => {
   renderDocumenti();
   syncReadDocumenti().then(renderDocumenti);
+  syncReadOfferte().then(renderOfferteSelect);
 });
+
+// ===== OFFERTE (locandine prodotto) =====
+let gOfferte = JSON.parse(localStorage.getItem('mt_offerte') || '[]');
+
+async function syncReadOfferte() {
+  const rows = await sheetsReadSheet(SHEET_OFFERTE);
+  if (!rows || rows.length <= 1) return;
+  const h = rows[0];
+  const iNome = h.indexOf('Nome'), iCat = h.indexOf('Categoria'), iLink = h.indexOf('Link'),
+        iPrezzo = h.indexOf('Prezzo'), iUnita = h.indexOf('Unita'), iDel = h.indexOf('DELETED');
+  const remote = rows.slice(1)
+    .filter(r => r[iDel] !== 'YES' && r[iNome])
+    .map(r => ({
+      nome: r[iNome] || '',
+      categoria: r[iCat] || 'Lavorato',
+      link: r[iLink] || '',
+      prezzo: r[iPrezzo] || '',
+      unita: r[iUnita] || ''
+    }));
+  gOfferte = remote;
+  localStorage.setItem('mt_offerte', JSON.stringify(remote));
+}
+
+function renderOfferteSelect() {
+  const sel = document.getElementById('off-prodotto');
+  const status = document.getElementById('offerte-status');
+  if (!sel) return;
+  if (!gOfferte.length) {
+    if (status) status.textContent = 'Nessun prodotto disponibile. Aggiungi righe nel foglio "Offerte" su Google Sheets.';
+    return;
+  }
+  if (status) status.textContent = gOfferte.length + ' prodotti disponibili';
+  const gruppi = {};
+  gOfferte.forEach((p, idx) => {
+    const k = p.categoria || 'Lavorato';
+    if (!gruppi[k]) gruppi[k] = [];
+    gruppi[k].push(idx);
+  });
+  let html = '<option value="">-- Seleziona --</option>';
+  Object.keys(gruppi).forEach(cat => {
+    html += `<optgroup label="${cat}">`;
+    gruppi[cat].forEach(idx => {
+      html += `<option value="${idx}">${gOfferte[idx].nome}</option>`;
+    });
+    html += `</optgroup>`;
+  });
+  sel.innerHTML = html;
+}
+
+function offerteProdottoChange() {
+  const idx = document.getElementById('off-prodotto').value;
+  const qtaField = document.getElementById('off-qta-field');
+  const prezzoInput = document.getElementById('off-prezzo');
+  if (idx === '') { qtaField.style.display = 'none'; prezzoInput.value = ''; return; }
+  const p = gOfferte[idx];
+  prezzoInput.value = p.prezzo || '';
+  if (p.categoria === 'Fresco') {
+    qtaField.style.display = '';
+    document.getElementById('off-qta').value = p.unita || '';
+  } else {
+    qtaField.style.display = 'none';
+  }
+}
+
+// Attende che i font brand siano pronti prima di disegnare sul canvas
+async function waitFonts() {
+  try { await document.fonts.load('700 40px "Cormorant Garamond"'); } catch(e) {}
+  try { await document.fonts.load('19px "Jost"'); } catch(e) {}
+  try { await document.fonts.ready; } catch(e) {}
+}
+
+function loadImageFromBlob(blob) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = URL.createObjectURL(blob);
+  });
+}
+
+async function generaLocandina() {
+  const idx = document.getElementById('off-prodotto').value;
+  if (idx === '') { alert('Seleziona un prodotto!'); return; }
+  const p = gOfferte[idx];
+  const prezzo = document.getElementById('off-prezzo').value;
+  const qta = document.getElementById('off-qta').value;
+  if (!prezzo) { alert('Inserisci un prezzo!'); return; }
+
+  const btn = event.target.closest('button');
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="ti ti-loader-2"></i>Generazione...';
+  btn.disabled = true;
+
+  try {
+    await waitFonts();
+    const canvas = document.getElementById('off-canvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const GOLD = '#B8963E';
+    const BLACK = '#1a1814';
+
+    // Sfondo bianco + bordo oro
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = GOLD;
+    ctx.lineWidth = 6;
+    ctx.strokeRect(3, 3, W - 6, H - 6);
+    ctx.lineWidth = 1;
+    ctx.strokeRect(18, 18, W - 36, H - 36);
+
+    // Logo (stesso PNG gi\u00e0 nell'header, base64 -> nessun problema CORS)
+    const logoImg = document.querySelector('.header-logo');
+    if (logoImg && logoImg.complete) {
+      const lh = 70, lw = logoImg.naturalWidth * (lh / logoImg.naturalHeight);
+      ctx.drawImage(logoImg, (W - lw) / 2, 45, lw, lh);
+    }
+
+    // Titolo "OFFERTA SPECIALE"
+    ctx.fillStyle = GOLD;
+    ctx.font = '500 22px Jost, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.letterSpacing = '4px';
+    ctx.fillText('OFFERTA SPECIALE', W / 2, 155);
+    ctx.letterSpacing = '0px';
+
+    // Foto prodotto
+    let photoBottom = 190;
+    if (p.link) {
+      try {
+        const blob = await fetchPdfBlob({ link: p.link });
+        if (blob) {
+          const img = await loadImageFromBlob(blob);
+          const maxW = W - 160, maxH = 480;
+          const ratio = Math.min(maxW / img.width, maxH / img.height);
+          const iw = img.width * ratio, ih = img.height * ratio;
+          const ix = (W - iw) / 2, iy = 190;
+          ctx.drawImage(img, ix, iy, iw, ih);
+          photoBottom = iy + ih;
+        }
+      } catch (e) { console.warn('Foto non caricata:', e); }
+    }
+
+    // Nome prodotto
+    ctx.fillStyle = BLACK;
+    let titleSize = 46;
+    ctx.font = `700 ${titleSize}px "Cormorant Garamond", serif`;
+    const maxTitleW = W - 120;
+    while (ctx.measureText(p.nome).width > maxTitleW && titleSize > 26) {
+      titleSize -= 2;
+      ctx.font = `700 ${titleSize}px "Cormorant Garamond", serif`;
+    }
+    const titleY = photoBottom + 70;
+    ctx.fillText(p.nome, W / 2, titleY);
+
+    // Linea oro
+    ctx.strokeStyle = GOLD;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - 90, titleY + 30);
+    ctx.lineTo(W / 2 + 90, titleY + 30);
+    ctx.stroke();
+
+    // Prezzo
+    ctx.fillStyle = BLACK;
+    ctx.font = '700 90px "Cormorant Garamond", serif';
+    const prezzoTesto = '\u20ac ' + parseFloat(prezzo).toFixed(2).replace('.', ',');
+    ctx.fillText(prezzoTesto, W / 2, titleY + 140);
+
+    // Quantit\u00e0 (solo fresco)
+    if (p.categoria === 'Fresco' && qta) {
+      ctx.fillStyle = GOLD;
+      ctx.font = '500 22px Jost, sans-serif';
+      ctx.fillText(qta, W / 2, titleY + 175);
+    }
+
+    // Footer nero con contatti
+    const footerH = 90;
+    ctx.fillStyle = BLACK;
+    ctx.fillRect(18, H - 18 - footerH, W - 36, footerH);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '400 17px Jost, sans-serif';
+    ctx.fillText('manueltartufi@proton.me  \u00b7  www.manueltartufi.it', W / 2, H - 18 - footerH / 2 - 5);
+    ctx.fillStyle = GOLD;
+    ctx.font = 'italic 500 16px "Cormorant Garamond", serif';
+    ctx.fillText('"Dove il Sapore incontra l\'Emozione"', W / 2, H - 18 - footerH / 2 + 22);
+
+    // Genera il PDF dal canvas
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [W, H] });
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    pdf.addImage(imgData, 'JPEG', 0, 0, W, H);
+    const pdfBlob = pdf.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+
+    window.currentOffertaBlob = pdfBlob;
+    window.currentOffertaNome = p.nome;
+
+    document.getElementById('off-apri').href = pdfUrl;
+    const scaricaBtn = document.getElementById('off-scarica');
+    scaricaBtn.href = pdfUrl;
+    scaricaBtn.download = 'Offerta_' + p.nome.replace(/[^a-z0-9]+/gi, '_') + '.pdf';
+    document.getElementById('offerta-preview-card').style.display = '';
+    document.getElementById('offerta-preview-card').scrollIntoView({ behavior: 'smooth' });
+  } catch (e) {
+    console.error(e);
+    alert('Errore nella generazione della locandina.');
+  } finally {
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+  }
+}
+
+async function condividiOfferta() {
+  if (!window.currentOffertaBlob) return;
+  const btn = document.getElementById('off-condividi');
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="ti ti-loader-2"></i>Preparazione...';
+  btn.style.pointerEvents = 'none';
+  try {
+    const nomeFile = 'Offerta_' + (window.currentOffertaNome || 'prodotto').replace(/[^a-z0-9]+/gi, '_') + '.pdf';
+    const file = new File([window.currentOffertaBlob], nomeFile, { type: 'application/pdf' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: window.currentOffertaNome });
+    } else {
+      document.getElementById('off-scarica').click();
+    }
+  } catch (e) {
+    if (e && e.name !== 'AbortError') console.warn('Condivisione non riuscita:', e);
+  } finally {
+    btn.innerHTML = originalHtml;
+    btn.style.pointerEvents = '';
+  }
+}
 
 async function sheetsSaveMovimento(mov) {
   const url = _getScriptUrl();

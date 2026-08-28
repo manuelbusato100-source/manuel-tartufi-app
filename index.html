@@ -2435,18 +2435,18 @@ async function generaLocandina() {
       scadenza: { it: 'OFFERTA VALIDA FINO AL', en: 'OFFER VALID UNTIL', cn: '\u4f18\u60e0\u622a\u6b62\u65e5\u671f' }
     };
     const righe = [];
-    const addCampo = (key, valoreIt, valoreAltro) => {
+    const addCampo = (key, valoreIt, valoreEn, valoreCn) => {
       const L = LABELS[key];
       righe.push({ text: `${L.it}: ${valoreIt}`, color: BLACK, font: '600 21px Jost, sans-serif' });
       if (isFunghi) {
-        righe.push({ text: `${L.en}: ${valoreAltro}`, color: '#9CAF88', font: '500 17px Jost, sans-serif' });
-        righe.push({ text: `${L.cn}\uff1a${valoreAltro}`, color: '#B8A27A', font: '500 18px "Cormorant Garamond", "Noto Sans SC", sans-serif' });
+        righe.push({ text: `${L.en}: ${valoreEn}`, color: '#9CAF88', font: '500 17px Jost, sans-serif' });
+        righe.push({ text: `${L.cn}\uff1a${valoreCn}`, color: '#B8A27A', font: '500 18px "Cormorant Garamond", "Noto Sans SC", sans-serif' });
       }
     };
-    if (p.categoria) addCampo('categoria', p.categoria, isFunghi ? 'Mushrooms' : p.categoria);
-    if (origine) addCampo('origine', origine, origine);
-    if (raccolta) addCampo('raccolta', formatDataIt(raccolta), formatDataIt(raccolta));
-    if (scadenza) addCampo('scadenza', formatDataIt(scadenza), formatDataIt(scadenza));
+    if (p.categoria) addCampo('categoria', p.categoria, isFunghi ? 'Mushrooms' : p.categoria, isFunghi ? '\u83cc\u83c7' : p.categoria);
+    if (origine) addCampo('origine', origine, origine, origine);
+    if (raccolta) addCampo('raccolta', formatDataIt(raccolta), formatDataIt(raccolta), formatDataIt(raccolta));
+    if (scadenza) addCampo('scadenza', formatDataIt(scadenza), formatDataIt(scadenza), formatDataIt(scadenza));
 
     const footerTopY = H - 18 - 90;
     const availH = footerTopY - blockTop;

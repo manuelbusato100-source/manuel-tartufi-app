@@ -1076,8 +1076,7 @@ function doGet(e) {
     <div class="doc-actions" style="margin-top:.75rem;justify-content:center;">
       <a id="off-apri" href="#" target="_blank" rel="noopener" style="display:none;"></a>
       <a id="off-scarica" href="#" download="offerta.pdf" style="display:none;"></a>
-      <button id="off-condividi" class="doc-btn primary" style="flex:1;padding:12px;" onclick="condividiOfferta()"><i class="ti ti-share-2"></i>Invia su WhatsApp / Mail</button>
-      <button class="doc-btn" onclick="mostraQROfferta()"><i class="ti ti-qrcode"></i>QR</button>
+      <button id="off-condividi" class="doc-btn primary" style="flex:1;padding:14px;font-size:12px;" onclick="condividiOfferta()"><i class="ti ti-share-2"></i>Invia su WhatsApp / Mail</button>
     </div>
   </div>
 </div>
@@ -2209,34 +2208,6 @@ async function condividiOfferta() {
   } finally {
     btn.innerHTML = originalHtml;
     btn.style.pointerEvents = '';
-  }
-}
-
-// Carica temporaneamente il PDF appena generato su un servizio pubblico
-// e mostra un QR che punta a quel link, cos\u00ec un altro telefono pu\u00f2 scansionarlo.
-async function mostraQROfferta() {
-  if (!window.currentOffertaBlob) return;
-  const btn = event.target.closest('button');
-  const originalHtml = btn.innerHTML;
-  btn.innerHTML = '<i class="ti ti-loader-2"></i>Caricamento...';
-  btn.disabled = true;
-  try {
-    const nomeFile = 'Offerta_' + (window.currentOffertaNome || 'prodotto').replace(/[^a-z0-9]+/gi, '_') + '.pdf';
-    const formData = new FormData();
-    formData.append('file', window.currentOffertaBlob, nomeFile);
-    const resp = await fetch('https://file.io/?expires=1d', { method: 'POST', body: formData });
-    const data = await resp.json();
-    if (!data || !data.link) throw new Error('Upload fallito');
-    const qrApi = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(data.link);
-    document.getElementById('qr-titolo').textContent = window.currentOffertaNome + ' (valido 1 giorno)';
-    document.getElementById('qr-img').src = qrApi;
-    document.getElementById('qr-overlay').classList.add('open');
-  } catch (e) {
-    console.warn('QR offerta non riuscito:', e);
-    alert('Non \u00e8 stato possibile generare il QR in questo momento. Usa "Invia su WhatsApp / Mail" oppure riprova.');
-  } finally {
-    btn.innerHTML = originalHtml;
-    btn.disabled = false;
   }
 }
 

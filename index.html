@@ -1043,6 +1043,12 @@ function doGet(e) {
       <div style="text-align:center;color:var(--text3);padding:2rem;font-size:13px;">Nessun dato disponibile.<br>Registra delle vendite fresco per vedere le statistiche.</div>
     </div>
   </div>
+  <div class="card" style="margin-top:1rem;">
+    <div class="card-title"><i class="ti ti-leaf"></i>Analisi Varietà Funghi</div>
+    <div id="analisi-varieta-funghi-list">
+      <div style="text-align:center;color:var(--text3);padding:2rem;font-size:13px;">Nessun dato disponibile.<br>Registra delle vendite funghi per vedere le statistiche.</div>
+    </div>
+  </div>
 </div>
 
 <!-- TAB DOCUMENTI -->
@@ -1442,6 +1448,7 @@ async function pullFromSheets() {
   aggiornaKPI();
   if(typeof aggiornaGrafici === 'function') aggiornaGrafici();
   if(typeof aggiornaAnalisi === 'function') aggiornaAnalisi();
+  if(typeof aggiornaAnalisiFunghi === 'function') aggiornaAnalisiFunghi();
   setSyncStatus('ok', 'Aggiornato');
 }
 
@@ -3078,7 +3085,7 @@ const _origGoTab = window.goTab;
 window.goTab = function(n) {
   if (_origGoTab) _origGoTab(n);
   if (n === 'grafici') setTimeout(aggiornaGrafici, 100);
-  if (n === 'analisi') setTimeout(aggiornaAnalisi, 100);
+  if (n === 'analisi') setTimeout(() => { aggiornaAnalisi(); aggiornaAnalisiFunghi(); }, 100);
 };
 
 // Also refresh charts after saving a movement
@@ -3087,6 +3094,7 @@ window.saveMovimento = function(tipo) {
   if (_origSaveMovimento) _origSaveMovimento(tipo);
   aggiornaGrafici();
   aggiornaAnalisi();
+  aggiornaAnalisiFunghi();
 };
 
 // ===== ANALISI VARIETÀ FRESCO =====
@@ -3150,8 +3158,68 @@ function aggiornaAnalisi() {
   container.innerHTML = html;
 }
 
+function aggiornaAnalisiFunghi() {
+  const container = document.getElementById('analisi-varieta-funghi-list');
+  if (!container) return;
+
+  // Prendi solo vendite funghi
+  const vendite = (gMovimenti || []).filter(m => m.tipo === 'funghi');
+
+  if (vendite.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text3);padding:2rem;font-size:13px;">Nessun dato disponibile.<br>Registra delle vendite funghi per vedere le statistiche.</div>';
+    return;
+  }
+
+  // Raggruppa per varietà
+  const map = {};
+  vendite.forEach(v => {
+    const vr = v.nome || 'Altra varietà';
+    if (!map[vr]) map[vr] = { kg: 0, incassato: 0, vendite: 0 };
+    map[vr].kg        += parseFloat((v.extra && v.extra.kg) ? v.extra.kg : 0);
+    map[vr].incassato += parseFloat(v.totale) || 0;
+    map[vr].vendite   += 1;
+  });
+
+  const fmt  = v => '€ ' + v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  const fmtKg = v => v.toFixed(3).replace('.',',') + ' kg';
+
+  const colori = ['#FFF9E6','#FFE8E8','#E8F0FF','#E8FFE8','#FFE8F5','#E8F8FF'];
+  const bordi  = ['#f0d080','#f0a0a0','#a0b8f0','#a0d0a0','#f0a0d0','#a0d8f0'];
+
+  let html = '<div style="display:flex;flex-direction:column;gap:12px;">';
+  Object.keys(map).sort().forEach((vr, i) => {
+    const d = map[vr];
+    const media = d.kg > 0 ? d.incassato / d.kg : 0;
+    const bg  = colori[i % colori.length];
+    const bd  = bordi[i % bordi.length];
+    html += `
+      <div style="background:${bg};border:1.5px solid ${bd};border-radius:10px;padding:14px 16px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#111;margin-bottom:10px;">
+          <i class="ti ti-leaf" style="margin-right:6px;"></i>${vr}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+          <div>
+            <div style="font-size:16px;font-weight:300;font-family:'Jost',sans-serif;color:#111;">${fmtKg(d.kg)}</div>
+            <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#555;margin-top:2px;">Peso Totale</div>
+          </div>
+          <div>
+            <div style="font-size:16px;font-weight:300;font-family:'Jost',sans-serif;color:#111;">${fmt(media)}/kg</div>
+            <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#555;margin-top:2px;">Media Prezzo</div>
+          </div>
+          <div>
+            <div style="font-size:16px;font-weight:300;font-family:'Jost',sans-serif;color:#111;">${fmt(d.incassato)}</div>
+            <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#555;margin-top:2px;">Totale Incassato</div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:#888;margin-top:8px;text-align:right;">${d.vendite} vendita${d.vendite>1?'e':''} registrata${d.vendite>1?'e':''}</div>
+      </div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
 // Aggiorna analisi anche al caricamento
-window.addEventListener('load', () => setTimeout(aggiornaAnalisi, 3000));
+window.addEventListener('load', () => setTimeout(() => { aggiornaAnalisi(); aggiornaAnalisiFunghi(); }, 3000));
 // ===== END ANALISI =====
 // ===== END GRAFICI =====
 

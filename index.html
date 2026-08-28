@@ -2193,10 +2193,11 @@ async function generaLocandina() {
     // Prezzo
     ctx.fillStyle = BLACK;
     const prezzoValore = parseFloat(prezzo).toFixed(2).replace('.', ',');
-    const prezzoTesto = p.categoria === 'Funghi' ? ('\u20ac/KG ' + prezzoValore) : ('\u20ac ' + prezzoValore);
+    const isFunghiPrezzo = p.categoria === 'Funghi';
+    const prezzoTesto = isFunghiPrezzo ? ('\u20ac/Kg ' + prezzoValore) : ('\u20ac ' + prezzoValore);
     let prezzoSize = 90;
     ctx.font = `700 ${prezzoSize}px "Cormorant Garamond", serif`;
-    const maxPrezzoW = W - 260;
+    const maxPrezzoW = isFunghiPrezzo ? W - 340 : W - 260;
     while (ctx.measureText(prezzoTesto).width > maxPrezzoW && prezzoSize > 40) {
       prezzoSize -= 4;
       ctx.font = `700 ${prezzoSize}px "Cormorant Garamond", serif`;
@@ -2207,7 +2208,8 @@ async function generaLocandina() {
     const blockTop = titleY + 175;
     if ((p.categoria === 'Fresco' || p.categoria === 'Funghi') && qta) {
       ctx.save();
-      const stampCx = W / 2 + 195, stampCy = titleY + 95, stampR = 58;
+      const stampOffsetX = p.categoria === 'Funghi' ? 250 : 195;
+      const stampCx = W / 2 + stampOffsetX, stampCy = titleY + 95, stampR = 58;
       ctx.translate(stampCx, stampCy);
       ctx.rotate(-14 * Math.PI / 180);
       ctx.strokeStyle = '#9CAF88';
@@ -2244,20 +2246,29 @@ async function generaLocandina() {
       return `${d}/${m}/${y}`;
     };
     const isFunghi = p.categoria === 'Funghi';
+    const LABELS = {
+      categoria: { it: 'CATEGORIA', en: 'CATEGORY', cn: '\u7c7b\u522b' },
+      origine: { it: 'ORIGINE', en: 'ORIGIN', cn: '\u4ea7\u5730' },
+      raccolta: { it: 'RACCOLTA DEL', en: 'HARVEST DATE', cn: '\u91c7\u6458\u65e5\u671f' },
+      scadenza: { it: 'OFFERTA VALIDA FINO AL', en: 'OFFER VALID UNTIL', cn: '\u4f18\u60e0\u622a\u6b62\u65e5\u671f' }
+    };
     const righe = [];
-    if (p.categoria) {
-      righe.push({ text: `CATEGORIA: ${p.categoria}`, color: BLACK, font: '600 21px Jost, sans-serif' });
+    const addCampo = (key, valoreIt, valoreAltro) => {
+      const L = LABELS[key];
+      righe.push({ text: `${L.it}: ${valoreIt}`, color: BLACK, font: '600 21px Jost, sans-serif' });
       if (isFunghi) {
-        righe.push({ text: 'CATEGORY: Mushrooms', color: '#9CAF88', font: '500 18px Jost, sans-serif' });
-        righe.push({ text: '\u7c7b\u522b\uff1a\u83cc\u83c7', color: '#B8A27A', font: '500 20px "Cormorant Garamond", "Noto Sans SC", sans-serif' });
+        righe.push({ text: `${L.en}: ${valoreAltro}`, color: '#9CAF88', font: '500 17px Jost, sans-serif' });
+        righe.push({ text: `${L.cn}\uff1a${valoreAltro}`, color: '#B8A27A', font: '500 18px "Cormorant Garamond", "Noto Sans SC", sans-serif' });
       }
-    }
-    if (origine) righe.push({ text: `ORIGINE: ${origine}`, color: BLACK, font: '600 21px Jost, sans-serif' });
-    if (raccolta) righe.push({ text: `RACCOLTA DEL: ${formatDataIt(raccolta)}`, color: BLACK, font: '600 21px Jost, sans-serif' });
-    if (scadenza) righe.push({ text: `OFFERTA VALIDA FINO AL: ${formatDataIt(scadenza)}`, color: BLACK, font: '600 21px Jost, sans-serif' });
+    };
+    if (p.categoria) addCampo('categoria', p.categoria, isFunghi ? 'Mushrooms' : p.categoria);
+    if (origine) addCampo('origine', origine, origine);
+    if (raccolta) addCampo('raccolta', formatDataIt(raccolta), formatDataIt(raccolta));
+    if (scadenza) addCampo('scadenza', formatDataIt(scadenza), formatDataIt(scadenza));
 
-    const lineH = 32;
     const footerTopY = H - 18 - 90;
+    const availH = footerTopY - blockTop;
+    const lineH = Math.min(32, Math.max(20, Math.floor(availH / (righe.length + 1))));
     const blockCenterY = (blockTop + footerTopY) / 2;
     let dettagliY = blockCenterY - ((righe.length - 1) * lineH) / 2;
     ctx.textAlign = 'center';

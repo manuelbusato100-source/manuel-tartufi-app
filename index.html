@@ -2200,13 +2200,32 @@ async function generaLocandina() {
     const prezzoTesto = '\u20ac ' + parseFloat(prezzo).toFixed(2).replace('.', ',');
     ctx.fillText(prezzoTesto, W / 2, titleY + 140);
 
-    // Quantit\u00e0 (Fresco/Funghi)
+    // Timbro rotondo con la quantit\u00e0 (Fresco/Funghi), accanto al prezzo
     let dettagliY = titleY + 175;
     if ((p.categoria === 'Fresco' || p.categoria === 'Funghi') && qta) {
-      ctx.fillStyle = GOLD;
-      ctx.font = '500 22px Jost, sans-serif';
-      ctx.fillText(qta, W / 2, dettagliY);
-      dettagliY += 40;
+      ctx.save();
+      const stampCx = W / 2 + 195, stampCy = titleY + 95, stampR = 58;
+      ctx.translate(stampCx, stampCy);
+      ctx.rotate(-14 * Math.PI / 180);
+      ctx.strokeStyle = '#9CAF88';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, stampR, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, stampR - 7, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = '#9CAF88';
+      ctx.font = '700 15px Jost, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.letterSpacing = '1px';
+      ctx.fillText('PREZZO A', 0, -8);
+      ctx.font = '700 30px "Cormorant Garamond", serif';
+      ctx.letterSpacing = '0px';
+      ctx.fillText(qta.toUpperCase(), 0, 26);
+      ctx.restore();
+      dettagliY += 15;
     } else {
       dettagliY += 15;
     }
@@ -2224,21 +2243,27 @@ async function generaLocandina() {
       scadenza ? `OFFERTA VALIDA FINO AL: ${formatDataIt(scadenza)}` : ''
     ].filter(Boolean);
     ctx.fillStyle = BLACK;
-    ctx.font = '500 17px Jost, sans-serif';
+    ctx.font = '600 21px Jost, sans-serif';
+    ctx.textAlign = 'center';
     dettagli.forEach((riga) => {
       ctx.fillText(riga, W / 2, dettagliY);
-      dettagliY += 26;
+      dettagliY += 32;
     });
 
-    // Footer dorato con contatti
+    // Footer dorato lucente con contatti
     const footerH = 90;
-    ctx.fillStyle = GOLD;
-    ctx.fillRect(18, H - 18 - footerH, W - 36, footerH);
+    const footerY = H - 18 - footerH;
+    const goldGrad = ctx.createLinearGradient(18, 0, W - 18, 0);
+    goldGrad.addColorStop(0, '#C89B3C');
+    goldGrad.addColorStop(0.5, '#F5D889');
+    goldGrad.addColorStop(1, '#C89B3C');
+    ctx.fillStyle = goldGrad;
+    ctx.fillRect(18, footerY, W - 36, footerH);
     ctx.fillStyle = BLACK;
-    ctx.font = '500 17px Jost, sans-serif';
-    ctx.fillText('manueltartufi@proton.me  \u00b7  www.manueltartufi.it', W / 2, H - 18 - footerH / 2 - 5);
-    ctx.font = 'italic 600 16px "Cormorant Garamond", serif';
-    ctx.fillText('"Dove il Sapore incontra l\'Emozione"', W / 2, H - 18 - footerH / 2 + 22);
+    ctx.font = '600 17px Jost, sans-serif';
+    ctx.fillText('manueltartufi@proton.me  \u00b7  www.manueltartufi.it', W / 2, footerY + footerH / 2 - 5);
+    ctx.font = 'italic 700 16px "Cormorant Garamond", serif';
+    ctx.fillText('"Dove il Sapore incontra l\'Emozione"', W / 2, footerY + footerH / 2 + 22);
 
     // Genera il PDF dal canvas
     const { jsPDF } = window.jspdf;

@@ -3214,6 +3214,34 @@ function aggiornaAnalisiFunghi() {
         <div style="font-size:10px;color:#888;margin-top:8px;text-align:right;">${d.vendite} vendita${d.vendite>1?'e':''} registrata${d.vendite>1?'e':''}</div>
       </div>`;
   });
+
+  // Riepilogo totale complessivo (tutte le varietà insieme)
+  const totKg = Object.values(map).reduce((a, d) => a + d.kg, 0);
+  const totIncassato = Object.values(map).reduce((a, d) => a + d.incassato, 0);
+  const totVendite = Object.values(map).reduce((a, d) => a + d.vendite, 0);
+  const mediaGenerale = totKg > 0 ? totIncassato / totKg : 0;
+  html += `
+    <div style="background:#F3EFE8;border:1.5px solid #C9A79A;border-radius:10px;padding:14px 16px;margin-top:4px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#111;margin-bottom:10px;">
+        <i class="ti ti-chart-bar" style="margin-right:6px;"></i>Totale Complessivo Funghi
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+        <div>
+          <div style="font-size:16px;font-weight:300;font-family:'Jost',sans-serif;color:#111;">${fmtKg(totKg)}</div>
+          <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#555;margin-top:2px;">Peso Totale</div>
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:300;font-family:'Jost',sans-serif;color:#111;">${fmt(mediaGenerale)}/kg</div>
+          <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#555;margin-top:2px;">Media Prezzo</div>
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:300;font-family:'Jost',sans-serif;color:#111;">${fmt(totIncassato)}</div>
+          <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#555;margin-top:2px;">Totale Incassato</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#888;margin-top:8px;text-align:right;">${totVendite} vendit${totVendite===1?'a':'e'} in totale, tutte le varietà</div>
+    </div>`;
+
   html += '</div>';
   container.innerHTML = html;
 }

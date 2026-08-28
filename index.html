@@ -2444,7 +2444,27 @@ async function generaLocandina() {
       }
     };
     if (p.categoria) addCampo('categoria', p.categoria, isFunghi ? 'Mushrooms' : p.categoria, isFunghi ? '\u83cc\u83c7' : p.categoria);
-    if (origine) addCampo('origine', origine, origine, origine);
+    const translateOrigine = (val) => {
+      let en = val, cn = val;
+      const replacements = [
+        [/italia/gi, 'Italy', '\u610f\u5927\u5229'],
+        [/toscana/gi, 'Tuscany', '\u6258\u65af\u5361\u7eb3'],
+        [/piemonte/gi, 'Piedmont', '\u76ae\u57c3\u8499\u7279'],
+        [/umbria/gi, 'Umbria', '\u4f26\u5e03\u91cc\u4e9a'],
+        [/marche/gi, 'Marche', '\u9a6c\u5c14\u5947\u5927\u5927'],
+        [/abruzzo/gi, 'Abruzzo', '\u963f\u5e03\u9c81\u624e\u6c83'],
+        [/molise/gi, 'Molise', '\u83ab\u5217\u65af']
+      ];
+      replacements.forEach(([re, enWord, cnWord]) => {
+        en = en.replace(re, enWord);
+        cn = cn.replace(re, cnWord);
+      });
+      return { en, cn };
+    };
+    if (origine) {
+      const origTr = translateOrigine(origine);
+      addCampo('origine', origine, origTr.en, origTr.cn);
+    }
     if (raccolta) addCampo('raccolta', formatDataIt(raccolta), formatDataIt(raccolta), formatDataIt(raccolta));
     if (scadenza) addCampo('scadenza', formatDataIt(scadenza), formatDataIt(scadenza), formatDataIt(scadenza));
 

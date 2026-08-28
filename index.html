@@ -1070,6 +1070,18 @@ function doGet(e) {
       <label>Quantit&agrave;</label>
       <input type="text" id="off-qta" placeholder="Es. 250g / 1kg"/>
     </div>
+    <div class="field">
+      <label>Origine</label>
+      <input type="text" id="off-origine" placeholder="Es. Piemonte, Italia"/>
+    </div>
+    <div class="field">
+      <label>Raccolta del</label>
+      <input type="date" id="off-raccolta"/>
+    </div>
+    <div class="field">
+      <label>Offerta valida fino al</label>
+      <input type="date" id="off-scadenza"/>
+    </div>
     <button class="btn-gold" onclick="generaLocandina()"><i class="ti ti-photo"></i>Genera Locandina</button>
   </div>
 
@@ -2082,6 +2094,9 @@ async function generaLocandina() {
   const p = gOfferte[idx];
   const prezzo = document.getElementById('off-prezzo').value;
   const qta = document.getElementById('off-qta').value;
+  const origine = document.getElementById('off-origine').value;
+  const raccolta = document.getElementById('off-raccolta').value;
+  const scadenza = document.getElementById('off-scadenza').value;
   if (!prezzo) { alert('Inserisci un prezzo!'); return; }
 
   const btn = event.target.closest('button');
@@ -2106,30 +2121,39 @@ async function generaLocandina() {
     ctx.lineWidth = 1;
     ctx.strokeRect(18, 18, W - 36, H - 36);
 
-    // Logo (stesso PNG gi\u00e0 nell'header, base64 -> nessun problema CORS)
+    // Logo a sinistra
     const logoImg = document.querySelector('.header-logo');
+    let logoRight = 45;
     if (logoImg && logoImg.complete) {
-      const lh = 70, lw = logoImg.naturalWidth * (lh / logoImg.naturalHeight);
-      ctx.drawImage(logoImg, (W - lw) / 2, 45, lw, lh);
+      const lh = 65, lw = logoImg.naturalWidth * (lh / logoImg.naturalHeight);
+      ctx.drawImage(logoImg, 45, 38, lw, lh);
+      logoRight = 45 + lw;
     }
 
-    // Titolo "OFFERTA SPECIALE"
-    ctx.fillStyle = GOLD;
-    ctx.font = '500 22px Jost, sans-serif';
+    // Scritta "OFFERTA" in IT / EN / CN, centrata nello spazio accanto al logo
+    const textCenterX = logoRight + 25 + (W - 36 - (logoRight + 25)) / 2;
     ctx.textAlign = 'center';
-    ctx.letterSpacing = '4px';
-    ctx.fillText('OFFERTA SPECIALE', W / 2, 155);
+    ctx.fillStyle = GOLD;
+    ctx.font = '700 26px "Cormorant Garamond", serif';
+    ctx.letterSpacing = '3px';
+    ctx.fillText('OFFERTA', textCenterX, 60);
+    ctx.font = '500 13px Jost, sans-serif';
+    ctx.letterSpacing = '2px';
+    ctx.fillText('OFFER', textCenterX, 80);
+    ctx.font = '500 18px "Cormorant Garamond", "Noto Sans SC", sans-serif';
+    ctx.letterSpacing = '2px';
+    ctx.fillText('\u4f18\u60e0', textCenterX, 102);
     ctx.letterSpacing = '0px';
 
     // Foto prodotto
-    let photoBottom = 190;
+    let photoBottom = 150;
     if (p.link) {
       try {
         const img = await loadDriveImage(p.link);
         const maxW = W - 160, maxH = 480;
         const ratio = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
         const iw = img.naturalWidth * ratio, ih = img.naturalHeight * ratio;
-        const ix = (W - iw) / 2, iy = 190;
+        const ix = (W - iw) / 2, iy = 150;
         ctx.drawImage(img, ix, iy, iw, ih);
         photoBottom = iy + ih;
       } catch (e) { console.warn('Foto non caricata:', e); }
@@ -2161,22 +2185,44 @@ async function generaLocandina() {
     const prezzoTesto = '\u20ac ' + parseFloat(prezzo).toFixed(2).replace('.', ',');
     ctx.fillText(prezzoTesto, W / 2, titleY + 140);
 
-    // Quantit\u00e0 (solo fresco)
+    // Quantit\u00e0 (Fresco/Funghi)
+    let dettagliY = titleY + 175;
     if ((p.categoria === 'Fresco' || p.categoria === 'Funghi') && qta) {
       ctx.fillStyle = GOLD;
       ctx.font = '500 22px Jost, sans-serif';
-      ctx.fillText(qta, W / 2, titleY + 175);
+      ctx.fillText(qta, W / 2, dettagliY);
+      dettagliY += 40;
+    } else {
+      dettagliY += 15;
     }
 
-    // Footer nero con contatti
-    const footerH = 90;
+    // Dettagli extra: Categoria / Origine / Raccolta del / Valida fino al
+    const formatDataIt = (iso) => {
+      if (!iso) return '';
+      const [y, m, d] = iso.split('-');
+      return `${d}/${m}/${y}`;
+    };
+    const dettagli = [
+      p.categoria ? `CATEGORIA: ${p.categoria}` : '',
+      origine ? `ORIGINE: ${origine}` : '',
+      raccolta ? `RACCOLTA DEL: ${formatDataIt(raccolta)}` : '',
+      scadenza ? `OFFERTA VALIDA FINO AL: ${formatDataIt(scadenza)}` : ''
+    ].filter(Boolean);
     ctx.fillStyle = BLACK;
-    ctx.fillRect(18, H - 18 - footerH, W - 36, footerH);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '400 17px Jost, sans-serif';
-    ctx.fillText('manueltartufi@proton.me  \u00b7  www.manueltartufi.it', W / 2, H - 18 - footerH / 2 - 5);
+    ctx.font = '500 17px Jost, sans-serif';
+    dettagli.forEach((riga) => {
+      ctx.fillText(riga, W / 2, dettagliY);
+      dettagliY += 26;
+    });
+
+    // Footer dorato con contatti
+    const footerH = 90;
     ctx.fillStyle = GOLD;
-    ctx.font = 'italic 500 16px "Cormorant Garamond", serif';
+    ctx.fillRect(18, H - 18 - footerH, W - 36, footerH);
+    ctx.fillStyle = BLACK;
+    ctx.font = '500 17px Jost, sans-serif';
+    ctx.fillText('manueltartufi@proton.me  \u00b7  www.manueltartufi.it', W / 2, H - 18 - footerH / 2 - 5);
+    ctx.font = 'italic 600 16px "Cormorant Garamond", serif';
     ctx.fillText('"Dove il Sapore incontra l\'Emozione"', W / 2, H - 18 - footerH / 2 + 22);
 
     // Genera il PDF dal canvas

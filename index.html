@@ -2224,9 +2224,10 @@ async function generaLocandina() {
       ctx.fillStyle = '#9CAF88';
       ctx.textAlign = 'center';
       if (p.categoria === 'Funghi') {
-        ctx.font = '700 26px "Cormorant Garamond", serif';
+        ctx.fillStyle = '#4F7942';
+        ctx.font = '700 34px "Cormorant Garamond", serif';
         ctx.letterSpacing = '0px';
-        ctx.fillText('\u00d7' + qta.toUpperCase(), 0, 10);
+        ctx.fillText('\u00d7' + qta.toUpperCase(), 0, 12);
       } else {
         ctx.font = '700 15px Jost, sans-serif';
         ctx.letterSpacing = '1px';

@@ -2220,9 +2220,10 @@ async function generaLocandina() {
       ctx.rotate(0.25 * mirror);
       drawOakLeafShape(22, color, 0.42);
       ctx.restore();
+      // Ghiande accostate alle foglie, nello stesso spazio ruotato del ramo (non isolate sullo stelo)
+      drawAcorn(mirror * length * 0.22, -length * 0.7, 12, color);
+      drawAcorn(mirror * length * 0.12, -length * 0.85, 10, color);
       ctx.restore();
-      drawAcorn(x + mirror * length * 0.14, y - length * 0.55, 13, color);
-      drawAcorn(x + mirror * length * 0.02, y - length * 0.4, 11, color);
     };
 
     const dustyRose = '#B98C82';

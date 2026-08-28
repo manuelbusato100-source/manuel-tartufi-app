@@ -2158,10 +2158,13 @@ async function generaLocandina() {
       const dustyRose = '#C9A79A';
       const sage = '#B9C49A';
       const taupe = '#B3A99C';
+      const blush = '#D8B9AE';
       drawBranch(W * 0.08, H * 0.34, 0.15, 150, dustyRose, 6, 1);
       drawBranch(W * 0.06, H * 0.68, -0.2, 130, taupe, 5, 1);
+      drawBranch(W * 0.06, H * 0.9, 0.1, 110, sage, 4, 1);
       drawBranch(W * 0.94, H * 0.4, -0.15, 150, sage, 6, -1);
       drawBranch(W * 0.96, H * 0.72, 0.2, 130, dustyRose, 5, -1);
+      drawBranch(W * 0.92, H * 0.95, -0.1, 100, blush, 4, -1);
       ctx.globalAlpha = 1;
     };
     drawPastelLeaves();

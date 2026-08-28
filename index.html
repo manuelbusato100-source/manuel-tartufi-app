@@ -2036,7 +2036,7 @@ function offerteProdottoChange() {
   if (idx === '') { qtaField.style.display = 'none'; prezzoInput.value = ''; return; }
   const p = gOfferte[idx];
   prezzoInput.value = p.prezzo || '';
-  if (p.categoria === 'Fresco') {
+  if (p.categoria === 'Fresco' || p.categoria === 'Funghi') {
     qtaField.style.display = '';
     document.getElementById('off-qta').value = p.unita || '';
   } else {
@@ -2162,7 +2162,7 @@ async function generaLocandina() {
     ctx.fillText(prezzoTesto, W / 2, titleY + 140);
 
     // Quantit\u00e0 (solo fresco)
-    if (p.categoria === 'Fresco' && qta) {
+    if ((p.categoria === 'Fresco' || p.categoria === 'Funghi') && qta) {
       ctx.fillStyle = GOLD;
       ctx.font = '500 22px Jost, sans-serif';
       ctx.fillText(qta, W / 2, titleY + 175);

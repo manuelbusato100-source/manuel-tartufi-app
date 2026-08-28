@@ -2122,35 +2122,46 @@ async function generaLocandina() {
     ctx.lineWidth = 1;
     ctx.strokeRect(18, 18, W - 36, H - 36);
 
-    // Foglie decorative pastello sullo sfondo, dietro al testo
+    // Rametti botanici decorativi color pastello, ai lati, dietro al testo
     const drawPastelLeaves = () => {
-      const palette = ['#BFE3C0', '#F6E3B4', '#F3C9C6', '#C7DEDD', '#DCC9E8'];
-      const leafCount = 16;
-      for (let i = 0; i < leafCount; i++) {
-        const lx = 40 + Math.random() * (W - 80);
-        const ly = 40 + Math.random() * (H - 80);
-        const size = 34 + Math.random() * 46;
-        const angle = Math.random() * Math.PI * 2;
-        const color = palette[i % palette.length];
+      const drawBranch = (x, y, angle, length, color, nLeaves, mirror) => {
         ctx.save();
-        ctx.translate(lx, ly);
+        ctx.translate(x, y);
         ctx.rotate(angle);
-        ctx.globalAlpha = 0.32;
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.moveTo(0, -size / 2);
-        ctx.bezierCurveTo(size / 2, -size / 2, size / 2, size / 2, 0, size / 2);
-        ctx.bezierCurveTo(-size / 2, size / 2, -size / 2, -size / 2, 0, -size / 2);
-        ctx.fill();
         ctx.globalAlpha = 0.4;
         ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(0, -size / 2 + 4);
-        ctx.lineTo(0, size / 2 - 4);
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(length * 0.3 * mirror, -length * 0.4, length * 0.15 * mirror, -length);
         ctx.stroke();
+        for (let i = 1; i <= nLeaves; i++) {
+          const t = i / (nLeaves + 1);
+          const px = length * 0.15 * mirror * t - length * 0.05 * mirror * Math.sin(t * Math.PI);
+          const py = -length * t;
+          const side = (i % 2 === 0 ? 1 : -1) * mirror;
+          const leafLen = 30 * (1 - t * 0.35);
+          ctx.save();
+          ctx.translate(px, py);
+          ctx.rotate(side * 0.85 - angle * 0.15);
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.bezierCurveTo(leafLen * 0.55, -leafLen * 0.25, leafLen * 0.5, leafLen * 0.35, 0, leafLen * 0.65);
+          ctx.bezierCurveTo(-leafLen * 0.25, leafLen * 0.35, -leafLen * 0.2, -leafLen * 0.2, 0, 0);
+          ctx.fillStyle = color;
+          ctx.globalAlpha = 0.38;
+          ctx.fill();
+          ctx.restore();
+        }
         ctx.restore();
-      }
+      };
+      const dustyRose = '#C9A79A';
+      const sage = '#B9C49A';
+      const taupe = '#B3A99C';
+      drawBranch(W * 0.08, H * 0.34, 0.15, 150, dustyRose, 6, 1);
+      drawBranch(W * 0.06, H * 0.68, -0.2, 130, taupe, 5, 1);
+      drawBranch(W * 0.94, H * 0.4, -0.15, 150, sage, 6, -1);
+      drawBranch(W * 0.96, H * 0.72, 0.2, 130, dustyRose, 5, -1);
       ctx.globalAlpha = 1;
     };
     drawPastelLeaves();

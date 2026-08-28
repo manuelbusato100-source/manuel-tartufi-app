@@ -2131,19 +2131,34 @@ async function generaLocandina() {
     }
 
     // Scritta "OFFERTA" in IT / EN / CN, centrata nello spazio accanto al logo
-    const textCenterX = logoRight + 25 + (W - 36 - (logoRight + 25)) / 2;
+    const textCenterX = logoRight + 25 + (W - 36 - 90 - (logoRight + 25)) / 2;
     ctx.textAlign = 'center';
     ctx.fillStyle = GOLD;
-    ctx.font = '700 26px "Cormorant Garamond", serif';
+    ctx.font = '700 34px "Cormorant Garamond", serif';
     ctx.letterSpacing = '3px';
-    ctx.fillText('OFFERTA', textCenterX, 60);
-    ctx.font = '500 13px Jost, sans-serif';
+    ctx.fillText('OFFERTA', textCenterX, 64);
+    ctx.fillStyle = '#9CAF88';
+    ctx.font = '500 17px Jost, sans-serif';
     ctx.letterSpacing = '2px';
-    ctx.fillText('OFFER', textCenterX, 80);
-    ctx.font = '500 18px "Cormorant Garamond", "Noto Sans SC", sans-serif';
+    ctx.fillText('OFFER', textCenterX, 87);
+    ctx.fillStyle = '#B8A27A';
+    ctx.font = '500 24px "Cormorant Garamond", "Noto Sans SC", sans-serif';
     ctx.letterSpacing = '2px';
-    ctx.fillText('\u4f18\u60e0', textCenterX, 102);
+    ctx.fillText('\u4f18\u60e0', textCenterX, 112);
     ctx.letterSpacing = '0px';
+
+    // Bandiera italiana in alto a destra (come nelle schede prodotto)
+    const flagW = 60, flagH = 40, flagX = W - 36 - flagW, flagY = 40;
+    const stripe = flagW / 3;
+    ctx.fillStyle = '#008C45';
+    ctx.fillRect(flagX, flagY, stripe, flagH);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(flagX + stripe, flagY, stripe, flagH);
+    ctx.fillStyle = '#CD212A';
+    ctx.fillRect(flagX + 2 * stripe, flagY, stripe, flagH);
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(flagX, flagY, flagW, flagH);
 
     // Foto prodotto
     let photoBottom = 150;

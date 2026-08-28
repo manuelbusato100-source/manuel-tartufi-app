@@ -2201,7 +2201,7 @@ async function generaLocandina() {
     ctx.fillText(prezzoTesto, W / 2, titleY + 140);
 
     // Timbro rotondo con la quantit\u00e0 (Fresco/Funghi), accanto al prezzo
-    let dettagliY = titleY + 175;
+    const blockTop = titleY + 175;
     if ((p.categoria === 'Fresco' || p.categoria === 'Funghi') && qta) {
       ctx.save();
       const stampCx = W / 2 + 195, stampCy = titleY + 95, stampR = 58;
@@ -2225,12 +2225,10 @@ async function generaLocandina() {
       ctx.letterSpacing = '0px';
       ctx.fillText(qta.toUpperCase(), 0, 26);
       ctx.restore();
-      dettagliY += 15;
-    } else {
-      dettagliY += 15;
     }
 
     // Dettagli extra: Categoria / Origine / Raccolta del / Valida fino al
+    // Centrati verticalmente nello spazio bianco tra prezzo/timbro e footer
     const formatDataIt = (iso) => {
       if (!iso) return '';
       const [y, m, d] = iso.split('-');
@@ -2242,12 +2240,16 @@ async function generaLocandina() {
       raccolta ? `RACCOLTA DEL: ${formatDataIt(raccolta)}` : '',
       scadenza ? `OFFERTA VALIDA FINO AL: ${formatDataIt(scadenza)}` : ''
     ].filter(Boolean);
+    const lineH = 32;
+    const footerTopY = H - 18 - 90;
+    const blockCenterY = (blockTop + footerTopY) / 2;
+    let dettagliY = blockCenterY - ((dettagli.length - 1) * lineH) / 2;
     ctx.fillStyle = BLACK;
     ctx.font = '600 21px Jost, sans-serif';
     ctx.textAlign = 'center';
     dettagli.forEach((riga) => {
       ctx.fillText(riga, W / 2, dettagliY);
-      dettagliY += 32;
+      dettagliY += lineH;
     });
 
     // Footer dorato lucente con contatti

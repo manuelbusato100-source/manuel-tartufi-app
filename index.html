@@ -2397,7 +2397,7 @@ async function generaLocandina() {
     const blockTop = titleY + 175;
     if ((p.categoria === 'Fresco' || p.categoria === 'Funghi') && qta) {
       ctx.save();
-      const stampOffsetX = p.categoria === 'Funghi' ? 250 : 195;
+      const stampOffsetX = (p.categoria === 'Funghi' || p.categoria === 'Fresco') ? 250 : 195;
       const stampCx = W / 2 + stampOffsetX, stampCy = titleY + 95, stampR = 58;
       ctx.translate(stampCx, stampCy);
       ctx.rotate(-14 * Math.PI / 180);
@@ -2436,6 +2436,8 @@ async function generaLocandina() {
       return `${d}/${m}/${y}`;
     };
     const isFunghi = p.categoria === 'Funghi';
+    const isFresco = p.categoria === 'Fresco';
+    const showTranslations = isFunghi || isFresco;
     const LABELS = {
       categoria: { it: 'CATEGORIA', en: 'CATEGORY', cn: '\u7c7b\u522b' },
       origine: { it: 'ORIGINE', en: 'ORIGIN', cn: '\u4ea7\u5730' },
@@ -2446,12 +2448,16 @@ async function generaLocandina() {
     const addCampo = (key, valoreIt, valoreEn, valoreCn) => {
       const L = LABELS[key];
       righe.push({ text: `${L.it}: ${valoreIt}`, color: BLACK, font: '600 21px Jost, sans-serif' });
-      if (isFunghi) {
+      if (showTranslations) {
         righe.push({ text: `${L.en}: ${valoreEn}`, color: '#9CAF88', font: '500 17px Jost, sans-serif' });
         righe.push({ text: `${L.cn}\uff1a${valoreCn}`, color: '#B8A27A', font: '500 18px "Cormorant Garamond", "Noto Sans SC", sans-serif' });
       }
     };
-    if (p.categoria) addCampo('categoria', p.categoria, isFunghi ? 'Mushrooms' : p.categoria, isFunghi ? '\u83cc\u83c7' : p.categoria);
+    if (p.categoria) addCampo(
+      'categoria', p.categoria,
+      isFunghi ? 'Mushrooms' : (isFresco ? 'Fresh' : p.categoria),
+      isFunghi ? '\u83cc\u83c7' : (isFresco ? '\u65b0\u9c9c' : p.categoria)
+    );
     const translateOrigine = (val) => {
       let en = val, cn = val;
       const replacements = [

@@ -2370,12 +2370,42 @@ async function generaLocandina() {
     const titleY = photoBottom + 70;
     ctx.fillText(p.nome, W / 2, titleY);
 
+    // Traduzione EN/CN del nome prodotto (solo Fresco/Funghi)
+    const showNomeTranslation = p.categoria === 'Funghi' || p.categoria === 'Fresco';
+    const translateNome = (val) => {
+      let en = val, cn = val;
+      const wordMap = [
+        [/tartufo/gi, 'Truffle', '\u677e\u9732'],
+        [/nero/gi, 'Black', '\u9ed1'],
+        [/bianco/gi, 'White', '\u767d'],
+        [/pregiato/gi, 'Prized', '\u73cd\u8d35'],
+        [/estivo/gi, 'Summer', '\u590f\u5b63'],
+        [/bianchetto/gi, 'Bianchetto', '\u767d\u677e\u9732']
+      ];
+      wordMap.forEach(([re, enWord, cnWord]) => {
+        en = en.replace(re, enWord);
+        cn = cn.replace(re, cnWord);
+      });
+      return { en, cn };
+    };
+    let lineY = titleY + 30;
+    if (showNomeTranslation) {
+      const nomeTr = translateNome(p.nome);
+      ctx.fillStyle = '#9CAF88';
+      ctx.font = '500 19px Jost, sans-serif';
+      ctx.fillText(nomeTr.en, W / 2, titleY + 26);
+      ctx.fillStyle = '#B8A27A';
+      ctx.font = '500 21px "Cormorant Garamond", "Noto Sans SC", sans-serif';
+      ctx.fillText(nomeTr.cn, W / 2, titleY + 50);
+      lineY = titleY + 82;
+    }
+
     // Linea oro
     ctx.strokeStyle = GOLD;
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(W / 2 - 90, titleY + 30);
-    ctx.lineTo(W / 2 + 90, titleY + 30);
+    ctx.moveTo(W / 2 - 90, lineY);
+    ctx.lineTo(W / 2 + 90, lineY);
     ctx.stroke();
 
     // Prezzo
@@ -2401,13 +2431,14 @@ async function generaLocandina() {
       const stampCx = W / 2 + stampOffsetX, stampCy = titleY + 95, stampR = 58;
       ctx.translate(stampCx, stampCy);
       ctx.rotate(-14 * Math.PI / 180);
-      const stampColor = p.categoria === 'Funghi' ? '#4F7942' : '#D32F2F';
+      const isFrescoStamp = p.categoria === 'Fresco';
+      const stampColor = p.categoria === 'Funghi' ? '#4F7942' : '#C41E1E';
       ctx.strokeStyle = stampColor;
-      ctx.lineWidth = 3;
+      ctx.lineWidth = isFrescoStamp ? 4.5 : 3;
       ctx.beginPath();
       ctx.arc(0, 0, stampR, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = isFrescoStamp ? 2.5 : 1.5;
       ctx.beginPath();
       ctx.arc(0, 0, stampR - 7, 0, Math.PI * 2);
       ctx.stroke();
@@ -2421,9 +2452,9 @@ async function generaLocandina() {
         ctx.font = '700 15px Jost, sans-serif';
         ctx.letterSpacing = '1px';
         ctx.fillText('PREZZO X', 0, -8);
-        ctx.font = '700 30px "Cormorant Garamond", serif';
+        ctx.font = '700 38px "Cormorant Garamond", serif';
         ctx.letterSpacing = '0px';
-        ctx.fillText(qta.toUpperCase(), 0, 26);
+        ctx.fillText(qta.toUpperCase(), 0, 30);
       }
       ctx.restore();
     }

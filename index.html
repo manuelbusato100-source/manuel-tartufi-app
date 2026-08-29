@@ -2382,10 +2382,11 @@ async function generaLocandina() {
     ctx.fillStyle = BLACK;
     const prezzoValore = parseFloat(prezzo).toFixed(2).replace('.', ',');
     const isFunghiPrezzo = p.categoria === 'Funghi';
-    const prezzoTesto = isFunghiPrezzo ? ('\u20ac/Kg ' + prezzoValore) : ('\u20ac ' + prezzoValore);
+    const isFrescoPrezzo = p.categoria === 'Fresco';
+    const prezzoTesto = (isFunghiPrezzo || isFrescoPrezzo) ? ('\u20ac/Kg ' + prezzoValore) : ('\u20ac ' + prezzoValore);
     let prezzoSize = 90;
     ctx.font = `700 ${prezzoSize}px "Cormorant Garamond", serif`;
-    const maxPrezzoW = isFunghiPrezzo ? W - 340 : W - 260;
+    const maxPrezzoW = (isFunghiPrezzo || isFrescoPrezzo) ? W - 340 : W - 260;
     while (ctx.measureText(prezzoTesto).width > maxPrezzoW && prezzoSize > 40) {
       prezzoSize -= 4;
       ctx.font = `700 ${prezzoSize}px "Cormorant Garamond", serif`;
@@ -2400,7 +2401,8 @@ async function generaLocandina() {
       const stampCx = W / 2 + stampOffsetX, stampCy = titleY + 95, stampR = 58;
       ctx.translate(stampCx, stampCy);
       ctx.rotate(-14 * Math.PI / 180);
-      ctx.strokeStyle = '#9CAF88';
+      const stampColor = p.categoria === 'Funghi' ? '#4F7942' : '#D32F2F';
+      ctx.strokeStyle = stampColor;
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.arc(0, 0, stampR, 0, Math.PI * 2);
@@ -2409,17 +2411,16 @@ async function generaLocandina() {
       ctx.beginPath();
       ctx.arc(0, 0, stampR - 7, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.fillStyle = '#9CAF88';
+      ctx.fillStyle = stampColor;
       ctx.textAlign = 'center';
       if (p.categoria === 'Funghi') {
-        ctx.fillStyle = '#4F7942';
         ctx.font = '700 34px "Cormorant Garamond", serif';
         ctx.letterSpacing = '0px';
         ctx.fillText('\u00d7' + qta.toUpperCase(), 0, 12);
       } else {
         ctx.font = '700 15px Jost, sans-serif';
         ctx.letterSpacing = '1px';
-        ctx.fillText('PREZZO A', 0, -8);
+        ctx.fillText('PREZZO X', 0, -8);
         ctx.font = '700 30px "Cormorant Garamond", serif';
         ctx.letterSpacing = '0px';
         ctx.fillText(qta.toUpperCase(), 0, 26);

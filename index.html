@@ -2196,6 +2196,48 @@ function loadDriveImage(link) {
   });
 }
 
+// Estrae un fotogramma dal video caricato, da usare come immagine sulla locandina
+function extractVideoFrame(file) {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    video.preload = 'auto';
+    video.muted = true;
+    video.playsInline = true;
+    const url = URL.createObjectURL(file);
+    video.src = url;
+    video.addEventListener('loadeddata', () => {
+      try { video.currentTime = Math.min(0.3, (video.duration || 1) / 4); }
+      catch (e) { video.currentTime = 0; }
+    });
+    video.addEventListener('seeked', () => {
+      try {
+        const c = document.createElement('canvas');
+        c.width = video.videoWidth; c.height = video.videoHeight;
+        c.getContext('2d').drawImage(video, 0, 0);
+        const img = new Image();
+        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+        img.src = c.toDataURL('image/jpeg', 0.9);
+      } catch (e) { reject(e); }
+    }, { once: true });
+    video.addEventListener('error', () => reject(new Error('Video non leggibile')));
+  });
+}
+
+// Disegna un'icona "play" semi-trasparente al centro dell'immagine, per segnalare che è un video
+function drawPlayBadge(ctx, ix, iy, iw, ih) {
+  const cx = ix + iw / 2, cy = iy + ih / 2, r = 46;
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.32, cy - r * 0.45);
+  ctx.lineTo(cx - r * 0.32, cy + r * 0.45);
+  ctx.lineTo(cx + r * 0.5, cy);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
 async function generaLocandina() {
   const idx = document.getElementById('off-prodotto').value;
   if (idx === '') { alert('Seleziona un prodotto!'); return; }
@@ -2444,18 +2486,28 @@ async function generaLocandina() {
       const flagX = W - 36 - flagW, flagY = 30;
       ctx.drawImage(flagImg, flagX, flagY, flagW, flagH);
     }                                                                                
-    // Foto prodotto
+    // Foto prodotto (usa la foto/video caricati per questa offerta, altrimenti la foto di catalogo)
     let photoBottom = 150;
-    if (p.link) {
-      try {
-        const img = await loadDriveImage(p.link);
-        const maxW = W - 160, maxH = 480;
-        const ratio = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
-        const iw = img.naturalWidth * ratio, ih = img.naturalHeight * ratio;
-        const ix = (W - iw) / 2, iy = 150;
-        ctx.drawImage(img, ix, iy, iw, ih);
-        photoBottom = iy + ih;
-      } catch (e) { console.warn('Foto non caricata:', e); }
+    let posterImg = null;
+    let isVideoFrame = false;
+    try {
+      if (gOffertaFoto.length) {
+        posterImg = await loadImageFromBlob(gOffertaFoto[0].file);
+      } else if (gOffertaVideo) {
+        posterImg = await extractVideoFrame(gOffertaVideo);
+        isVideoFrame = true;
+      } else if (p.link) {
+        posterImg = await loadDriveImage(p.link);
+      }
+    } catch (e) { console.warn('Foto/video non caricati:', e); }
+    if (posterImg) {
+      const maxW = W - 160, maxH = 480;
+      const ratio = Math.min(maxW / posterImg.naturalWidth, maxH / posterImg.naturalHeight);
+      const iw = posterImg.naturalWidth * ratio, ih = posterImg.naturalHeight * ratio;
+      const ix = (W - iw) / 2, iy = 150;
+      ctx.drawImage(posterImg, ix, iy, iw, ih);
+      if (isVideoFrame) drawPlayBadge(ctx, ix, iy, iw, ih);
+      photoBottom = iy + ih;
     }
 
     // Nome prodotto

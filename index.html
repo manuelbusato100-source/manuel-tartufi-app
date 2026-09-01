@@ -2658,10 +2658,13 @@ async function condividiOfferta() {
     const allFiles = [pdfFile, ...mediaFiles];
     if (navigator.canShare && navigator.canShare({ files: allFiles })) {
       await navigator.share({ files: allFiles, title: window.currentOffertaNome });
+      resetOffertaMedia();
     } else if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
       await navigator.share({ files: [pdfFile], title: window.currentOffertaNome });
+      resetOffertaMedia();
     } else {
       document.getElementById('off-scarica').click();
+      resetOffertaMedia();
     }
   } catch (e) {
     if (e && e.name !== 'AbortError') console.warn('Condivisione non riuscita:', e);
@@ -2669,6 +2672,16 @@ async function condividiOfferta() {
     btn.innerHTML = originalHtml;
     btn.style.pointerEvents = '';
   }
+}
+
+function resetOffertaMedia() {
+  gOffertaFoto = [];
+  gOffertaVideo = null;
+  renderOffertaFotoRow();
+  const prev = document.getElementById('off-video-preview');
+  if (prev) { prev.pause(); prev.removeAttribute('src'); prev.load(); prev.style.display = 'none'; }
+  const videoAdd = document.getElementById('off-video-add');
+  if (videoAdd) videoAdd.innerHTML = '<i class="ti ti-video-plus"></i>';
 }
 
 async function sheetsSaveMovimento(mov) {

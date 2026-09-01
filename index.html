@@ -2502,32 +2502,22 @@ async function generaLocandina() {
       const flagX = W - 36 - flagW, flagY = 30;
       ctx.drawImage(flagImg, flagX, flagY, flagW, flagH);
     }                                                                                
-    // Foto prodotto (usa la foto/video caricati per questa offerta, altrimenti la foto di catalogo)
+    // Foto prodotto (usa la foto caricata per questa offerta, altrimenti la foto di catalogo)
     let photoBottom = 150;
     let posterImg = null;
-    let isVideoFrame = false;
     try {
       if (gOffertaFoto.length) {
         posterImg = await loadImageFromBlob(gOffertaFoto[0].file);
-      } else if (gOffertaVideo) {
-        posterImg = await extractVideoFrame(gOffertaVideo);
-        isVideoFrame = true;
       } else if (p.link) {
         posterImg = await loadDriveImage(p.link);
       }
-    } catch (e) {
-      console.warn('Foto/video non caricati:', e);
-      if (gOffertaVideo && !gOffertaFoto.length) {
-        alert('Non sono riuscito a estrarre un fotogramma dal video. La locandina verrà generata senza immagine: prova con un altro video o passa alla scheda Foto.');
-      }
-    }
+    } catch (e) { console.warn('Foto non caricata:', e); }
     if (posterImg) {
       const maxW = W - 160, maxH = 480;
       const ratio = Math.min(maxW / posterImg.naturalWidth, maxH / posterImg.naturalHeight);
       const iw = posterImg.naturalWidth * ratio, ih = posterImg.naturalHeight * ratio;
       const ix = (W - iw) / 2, iy = 150;
       ctx.drawImage(posterImg, ix, iy, iw, ih);
-      if (isVideoFrame) drawPlayBadge(ctx, ix, iy, iw, ih);
       photoBottom = iy + ih;
     }
 

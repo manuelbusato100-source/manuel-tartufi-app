@@ -1477,7 +1477,7 @@ async function sheetsLoadAll() {
         let extra = {};
         try { extra = JSON.parse(r[idxExtra] || '{}'); } catch {}
         return {
-          id: Number(r[idxId]) || Date.now(),
+          id: (r[idxId] || '').toString() || ('m'+Date.now()),
           tipo: r[idxTipo] || '',
           data: r[idxData] || '',
           nome: r[idxNome] || '',
@@ -1775,7 +1775,7 @@ function saveMovimento(tipo, btnEl){
     const totale = righe.reduce((a,r) => a+r.totale, 0);
     const nome = righe.length === 1 ? righe[0].varieta : righe.map(r=>r.varieta).join(', ');
     mov = {
-      id: Date.now()*1000+Math.floor(Math.random()*1000), tipo: 'vendita',
+      id: 'm'+Date.now()+Math.floor(Math.random()*1000), tipo: 'vendita',
       data: document.getElementById('gv-data').value,
       nome,
       totale,
@@ -1815,7 +1815,7 @@ function saveMovimento(tipo, btnEl){
     const totale = righe.reduce((a,r) => a+r.totale, 0);
     const nome = righe.length === 1 ? righe[0].nome : righe.map(r=>r.nome).join(', ');
     mov = {
-      id: Date.now()*1000+Math.floor(Math.random()*1000), tipo: 'lavorato',
+      id: 'm'+Date.now()+Math.floor(Math.random()*1000), tipo: 'lavorato',
       data: document.getElementById('gl-data').value,
       nome,
       totale,
@@ -1855,7 +1855,7 @@ function saveMovimento(tipo, btnEl){
     const totale = righe.reduce((a,r) => a+r.totale, 0);
     const nome = righe.length === 1 ? righe[0].varieta : righe.map(r=>r.varieta).join(', ');
     mov = {
-      id: Date.now()*1000+Math.floor(Math.random()*1000), tipo: 'funghi',
+      id: 'm'+Date.now()+Math.floor(Math.random()*1000), tipo: 'funghi',
       data: document.getElementById('gf-data').value,
       nome,
       totale,
@@ -1896,7 +1896,7 @@ function saveMovimento(tipo, btnEl){
     const totale = righe.reduce((a,r) => a+r.totale, 0);
     const nome = righe.length === 1 ? righe[0].varieta : righe.map(r=>r.varieta).join(', ');
     mov = {
-      id: Date.now()*1000+Math.floor(Math.random()*1000), tipo: 'acquisto',
+      id: 'm'+Date.now()+Math.floor(Math.random()*1000), tipo: 'acquisto',
       data: document.getElementById('ga-data').value,
       nome,
       totale,
@@ -1967,7 +1967,7 @@ function renderMovimenti(){
     const da = a.data || '';
     const db = b.data || '';
     if(da !== db) return db.localeCompare(da);
-    return b.id - a.id;
+    return String(b.id).localeCompare(String(a.id));
   }).slice(0,30);
   el.innerHTML = recent.map(m => {
     const isAcq = m.tipo === 'acquisto';
@@ -2008,7 +2008,7 @@ function renderMovimenti(){
         <div class="mov-detail">${dettaglio}</div>
       </div>
       <div class="mov-amt ${isAcq?'neg':'pos'}">${isAcq?'−':'+'}€${m.totale.toFixed(2)}</div>
-      <button class="mov-del" onclick="deleteMovimento(${m.id})" title="Elimina">×</button>
+      <button class="mov-del" onclick="deleteMovimento('${m.id}')" title="Elimina">×</button>
     </div>`;
   }).join('');
 

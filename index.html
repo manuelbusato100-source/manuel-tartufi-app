@@ -1600,7 +1600,12 @@ function removeRigaAcquisto(btn){
   calcATotal();
 }
 
+let gSalvandoMovimento = false;
 function saveMovimento(tipo){
+  if (gSalvandoMovimento) return; // blocca doppi click/tap ravvicinati
+  gSalvandoMovimento = true;
+  setTimeout(() => { gSalvandoMovimento = false; }, 1200);
+
   setToday();
   let mov = null;
 
@@ -1610,7 +1615,7 @@ function saveMovimento(tipo){
     if(!varieta){ alert('Seleziona la varietà'); return; }
     if(totale <= 0){ alert('Inserisci kg e prezzo'); return; }
     mov = {
-      id: Date.now(), tipo: 'vendita',
+      id: Date.now()*1000+Math.floor(Math.random()*1000), tipo: 'vendita',
       data: document.getElementById('gv-data').value,
       nome: varieta,
       totale,
@@ -1631,7 +1636,7 @@ function saveMovimento(tipo){
     if(!prodotto){ alert('Seleziona il prodotto'); return; }
     if(totale <= 0){ alert('Inserisci quantità e prezzo'); return; }
     mov = {
-      id: Date.now(), tipo: 'lavorato',
+      id: Date.now()*1000+Math.floor(Math.random()*1000), tipo: 'lavorato',
       data: document.getElementById('gl-data').value,
       nome: prodotto,
       totale,
@@ -1653,7 +1658,7 @@ function saveMovimento(tipo){
     if(!varieta){ alert('Seleziona la varietà'); return; }
     if(totale <= 0){ alert('Inserisci kg e prezzo'); return; }
     mov = {
-      id: Date.now(), tipo: 'funghi',
+      id: Date.now()*1000+Math.floor(Math.random()*1000), tipo: 'funghi',
       data: document.getElementById('gf-data').value,
       nome: varieta,
       totale,
@@ -1684,7 +1689,7 @@ function saveMovimento(tipo){
     const totale = righe.reduce((a,r) => a+r.totale, 0);
     const nome = righe.length === 1 ? righe[0].varieta : righe.map(r=>r.varieta).join(', ');
     mov = {
-      id: Date.now(), tipo: 'acquisto',
+      id: Date.now()*1000+Math.floor(Math.random()*1000), tipo: 'acquisto',
       data: document.getElementById('ga-data').value,
       nome,
       totale,

@@ -3748,14 +3748,24 @@ function aggiornaAnalisiFunghi() {
     return;
   }
 
-  // Raggruppa per varietà
+  // Raggruppa per varietà (scompone le vendite multi-prodotto riga per riga)
   const map = {};
   vendite.forEach(v => {
-    const vr = v.nome || 'Altra varietà';
-    if (!map[vr]) map[vr] = { kg: 0, incassato: 0, vendite: 0 };
-    map[vr].kg        += parseFloat((v.extra && v.extra.kg) ? v.extra.kg : 0);
-    map[vr].incassato += parseFloat(v.totale) || 0;
-    map[vr].vendite   += 1;
+    if (v.extra && Array.isArray(v.extra.righe) && v.extra.righe.length) {
+      v.extra.righe.forEach(r => {
+        const vr = r.varieta || r.nome || 'Altra varietà';
+        if (!map[vr]) map[vr] = { kg: 0, incassato: 0, vendite: 0 };
+        map[vr].kg        += parseFloat(r.kg) || 0;
+        map[vr].incassato += parseFloat(r.totale) || 0;
+        map[vr].vendite   += 1;
+      });
+    } else {
+      const vr = v.nome || 'Altra varietà';
+      if (!map[vr]) map[vr] = { kg: 0, incassato: 0, vendite: 0 };
+      map[vr].kg        += parseFloat((v.extra && v.extra.kg) ? v.extra.kg : 0);
+      map[vr].incassato += parseFloat(v.totale) || 0;
+      map[vr].vendite   += 1;
+    }
   });
 
   const fmt  = v => '€ ' + v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,'.');

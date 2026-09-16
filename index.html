@@ -669,27 +669,37 @@ function doGet(e) {
         <div class="gfield"><label>Data</label><input type="date" id="gv-data"/></div>
         <div class="gfield"><label>Cliente</label><input type="text" id="gv-cliente" placeholder="Nome cliente"/></div>
       </div>
-      <div class="form-row">
-        <div class="gfield"><label>Varietà</label>
-          <select id="gv-varieta">
-            <option value="">Seleziona...</option>
-            <option>Tartufo Nero Estivo (Scorzone)</option>
-            <option>Tartufo Nero Pregiato</option>
-            <option>Tartufo Bianco Pregiato</option>
-            <option>Tartufo Uncinato</option>
-          </select>
+
+      <div id="gv-righe-wrap">
+        <div class="ga-riga" data-riga="0">
+          <div class="form-row">
+            <div class="gfield"><label>Varietà</label>
+              <select class="gv-r-varieta">
+                <option value="">Seleziona...</option>
+                <option>Tartufo Nero Estivo (Scorzone)</option>
+                <option>Tartufo Nero Pregiato</option>
+                <option>Tartufo Bianco Pregiato</option>
+                <option>Tartufo Uncinato</option>
+              </select>
+            </div>
+            <div class="gfield"><label>Kg venduti</label><input type="number" class="gv-r-kg" placeholder="0.000" step="0.001" oninput="calcVTotal()"/></div>
+          </div>
+          <div class="form-row">
+            <div class="gfield" style="grid-column:1/-1;"><label>Prezzo €/kg netto</label><input type="number" class="gv-r-prezzo" placeholder="0.00" step="0.01" oninput="calcVTotal()"/></div>
+          </div>
         </div>
-        <div class="gfield"><label>Kg venduti</label><input type="number" id="gv-kg" placeholder="0.000" step="0.001" oninput="calcVTotal()"/></div>
       </div>
-      <div class="form-row">
-        <div class="gfield"><label>Prezzo €/kg netto</label><input type="number" id="gv-prezzo" placeholder="0.00" step="0.01" oninput="calcVTotal()"/></div>
+
+      <button type="button" class="btn-outline-gold" onclick="addRigaVendita()" style="width:100%;margin-top:.6rem;"><i class="ti ti-plus"></i>&nbsp;Aggiungi un altro prodotto</button>
+
+      <div class="form-row" style="margin-top:.75rem;">
         <div class="gfield"><label>Totale netto €</label><input type="number" id="gv-totale" placeholder="0.00" step="0.01" readonly/></div>
-      </div>
-      <div class="form-row">
         <div class="gfield"><label>Fatturato?</label>
           <select id="gv-fatt"><option value="SI">SI</option><option value="NO">NO</option></select>
         </div>
-        <div class="gfield"><label>N° Fattura</label><input type="text" id="gv-nfatt" placeholder="opzionale"/></div>
+      </div>
+      <div class="form-row">
+        <div class="gfield" style="grid-column:1/-1;"><label>N° Fattura</label><input type="text" id="gv-nfatt" placeholder="opzionale"/></div>
       </div>
       <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('vendita')"><i class="ti ti-device-floppy"></i>Registra vendita</button>
     </div>
@@ -700,41 +710,49 @@ function doGet(e) {
         <div class="gfield"><label>Data</label><input type="date" id="gl-data"/></div>
         <div class="gfield"><label>Cliente</label><input type="text" id="gl-cliente" placeholder="Nome cliente"/></div>
       </div>
-      <div class="form-row">
-        <div class="gfield"><label>Prodotto</label>
-          <select id="gl-prodotto">
-            <option value="">Seleziona...</option>
-            <option>Salsa Tartufo Estivo 20%</option>
-            <option>Salsa Tartufata</option>
-            <option>Salsa Tartufi Bianchi</option>
-            <option>Crema Funghi Porcini e Tartufo Bianco</option>
-            <option>Carpaccio di Tartufo</option>
-            <option>Tartufo Macinato</option>
-            <option>Tartufo Intero in Salamoia</option>
-            <option>Crema Carciofi e Tartufo</option>
-            <option>Olio al Tartufo Bianco</option>
-            <option>Olio al Tartufo Nero</option>
-            <option>Burro al Tartufo Estivo</option>
-            <option>Burro al Tartufo Bianco</option>
-            <option>Sale al Tartufo</option>
-            <option>Miele Acacia e Tartufo</option>
-            <option>Pasta al Tartufo Nero</option>
-            <option>Pasta al Tartufo Bianco</option>
-          </select>
-        </div>
-        <div class="gfield"><label>Formato</label>
-          <select id="gl-formato">
-            <option>75g</option><option>80g</option><option>90g</option><option>250ml Olio</option>
-            <option>100g</option><option>100ml</option><option>175g</option><option>180g</option>
-            <option>250g</option><option>450g</option><option>500g</option><option>1000ml</option>
-          </select>
+
+      <div id="gl-righe-wrap">
+        <div class="ga-riga" data-riga="0">
+          <div class="form-row">
+            <div class="gfield"><label>Prodotto</label>
+              <select class="gl-r-prodotto">
+                <option value="">Seleziona...</option>
+                <option>Salsa Tartufo Estivo 20%</option>
+                <option>Salsa Tartufata</option>
+                <option>Salsa Tartufi Bianchi</option>
+                <option>Crema Funghi Porcini e Tartufo Bianco</option>
+                <option>Carpaccio di Tartufo</option>
+                <option>Tartufo Macinato</option>
+                <option>Tartufo Intero in Salamoia</option>
+                <option>Crema Carciofi e Tartufo</option>
+                <option>Olio al Tartufo Bianco</option>
+                <option>Olio al Tartufo Nero</option>
+                <option>Burro al Tartufo Estivo</option>
+                <option>Burro al Tartufo Bianco</option>
+                <option>Sale al Tartufo</option>
+                <option>Miele Acacia e Tartufo</option>
+                <option>Pasta al Tartufo Nero</option>
+                <option>Pasta al Tartufo Bianco</option>
+              </select>
+            </div>
+            <div class="gfield"><label>Formato</label>
+              <select class="gl-r-formato">
+                <option>75g</option><option>80g</option><option>90g</option><option>250ml Olio</option>
+                <option>100g</option><option>100ml</option><option>175g</option><option>180g</option>
+                <option>250g</option><option>450g</option><option>500g</option><option>1000ml</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="gfield"><label>Qtà pezzi</label><input type="number" class="gl-r-qty" placeholder="1" step="1" oninput="calcLTotal()"/></div>
+            <div class="gfield"><label>Prezzo €/pz netto</label><input type="number" class="gl-r-prezzo" placeholder="0.00" step="0.01" oninput="calcLTotal()"/></div>
+          </div>
         </div>
       </div>
-      <div class="form-row">
-        <div class="gfield"><label>Qtà pezzi</label><input type="number" id="gl-qty" placeholder="1" step="1" oninput="calcLTotal()"/></div>
-        <div class="gfield"><label>Prezzo €/pz netto</label><input type="number" id="gl-prezzo" placeholder="0.00" step="0.01" oninput="calcLTotal()"/></div>
-      </div>
-      <div class="form-row">
+
+      <button type="button" class="btn-outline-gold" onclick="addRigaLavorato()" style="width:100%;margin-top:.6rem;"><i class="ti ti-plus"></i>&nbsp;Aggiungi un altro prodotto</button>
+
+      <div class="form-row" style="margin-top:.75rem;">
         <div class="gfield"><label>Totale netto €</label><input type="number" id="gl-totale" placeholder="0.00" step="0.01" readonly/></div>
         <div class="gfield"><label>Fatturato?</label>
           <select id="gl-fatt"><option value="SI">SI</option><option value="NO">NO</option></select>
@@ -752,29 +770,39 @@ function doGet(e) {
         <div class="gfield"><label>Data</label><input type="date" id="gf-data"/></div>
         <div class="gfield"><label>Cliente</label><input type="text" id="gf-cliente" placeholder="Nome cliente"/></div>
       </div>
-      <div class="form-row">
-        <div class="gfield"><label>Varietà</label>
-          <select id="gf-varieta">
-            <option value="">Seleziona...</option>
-            <option>Porcini</option>
-            <option>Finferli</option>
-            <option>Barboni</option>
-            <option>Trombette Nere</option>
-            <option>Ovoli</option>
-            <option>Chiodini</option>
-          </select>
+
+      <div id="gf-righe-wrap">
+        <div class="ga-riga" data-riga="0">
+          <div class="form-row">
+            <div class="gfield"><label>Varietà</label>
+              <select class="gf-r-varieta">
+                <option value="">Seleziona...</option>
+                <option>Porcini</option>
+                <option>Finferli</option>
+                <option>Barboni</option>
+                <option>Trombette Nere</option>
+                <option>Ovoli</option>
+                <option>Chiodini</option>
+              </select>
+            </div>
+            <div class="gfield"><label>Kg venduti</label><input type="number" class="gf-r-kg" placeholder="0.000" step="0.001" oninput="calcFTotal()"/></div>
+          </div>
+          <div class="form-row">
+            <div class="gfield" style="grid-column:1/-1;"><label>Prezzo €/kg netto</label><input type="number" class="gf-r-prezzo" placeholder="0.00" step="0.01" oninput="calcFTotal()"/></div>
+          </div>
         </div>
-        <div class="gfield"><label>Kg venduti</label><input type="number" id="gf-kg" placeholder="0.000" step="0.001" oninput="calcFTotal()"/></div>
       </div>
-      <div class="form-row">
-        <div class="gfield"><label>Prezzo €/kg netto</label><input type="number" id="gf-prezzo" placeholder="0.00" step="0.01" oninput="calcFTotal()"/></div>
+
+      <button type="button" class="btn-outline-gold" onclick="addRigaFunghi()" style="width:100%;margin-top:.6rem;"><i class="ti ti-plus"></i>&nbsp;Aggiungi un altro prodotto</button>
+
+      <div class="form-row" style="margin-top:.75rem;">
         <div class="gfield"><label>Totale netto €</label><input type="number" id="gf-totale" placeholder="0.00" step="0.01" readonly/></div>
-      </div>
-      <div class="form-row">
         <div class="gfield"><label>Fatturato?</label>
           <select id="gf-fatt"><option value="SI">SI</option><option value="NO">NO</option></select>
         </div>
-        <div class="gfield"><label>N° Fattura</label><input type="text" id="gf-nfatt" placeholder="opzionale"/></div>
+      </div>
+      <div class="form-row">
+        <div class="gfield" style="grid-column:1/-1;"><label>N° Fattura</label><input type="text" id="gf-nfatt" placeholder="opzionale"/></div>
       </div>
       <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('funghi')"><i class="ti ti-device-floppy"></i>Registra vendita</button>
     </div>
@@ -1527,19 +1555,31 @@ function setToday(){
 }
 
 function calcFTotal(){
-  const kg = parseFloat(document.getElementById('gf-kg').value)||0;
-  const p  = parseFloat(document.getElementById('gf-prezzo').value)||0;
-  document.getElementById('gf-totale').value = (kg*p).toFixed(2);
+  let tot = 0;
+  document.querySelectorAll('#gf-righe-wrap .ga-riga').forEach(r => {
+    const kg = parseFloat(r.querySelector('.gf-r-kg').value) || 0;
+    const p  = parseFloat(r.querySelector('.gf-r-prezzo').value) || 0;
+    tot += kg * p;
+  });
+  document.getElementById('gf-totale').value = tot.toFixed(2);
 }
 function calcVTotal(){
-  const kg = parseFloat(document.getElementById('gv-kg').value)||0;
-  const p  = parseFloat(document.getElementById('gv-prezzo').value)||0;
-  document.getElementById('gv-totale').value = (kg*p).toFixed(2);
+  let tot = 0;
+  document.querySelectorAll('#gv-righe-wrap .ga-riga').forEach(r => {
+    const kg = parseFloat(r.querySelector('.gv-r-kg').value) || 0;
+    const p  = parseFloat(r.querySelector('.gv-r-prezzo').value) || 0;
+    tot += kg * p;
+  });
+  document.getElementById('gv-totale').value = tot.toFixed(2);
 }
 function calcLTotal(){
-  const q = parseFloat(document.getElementById('gl-qty').value)||0;
-  const p = parseFloat(document.getElementById('gl-prezzo').value)||0;
-  document.getElementById('gl-totale').value = (q*p).toFixed(2);
+  let tot = 0;
+  document.querySelectorAll('#gl-righe-wrap .ga-riga').forEach(r => {
+    const q = parseFloat(r.querySelector('.gl-r-qty').value) || 0;
+    const p = parseFloat(r.querySelector('.gl-r-prezzo').value) || 0;
+    tot += q * p;
+  });
+  document.getElementById('gl-totale').value = tot.toFixed(2);
 }
 function calcATotal(){
   let tot = 0;
@@ -1549,6 +1589,114 @@ function calcATotal(){
     tot += kg * p;
   });
   document.getElementById('ga-totale').value = tot.toFixed(2);
+}
+
+let gvRigaCount = 1;
+function rigaVenditaHTML(idx){
+  return `<div class="ga-riga" data-riga="${idx}">
+    <div class="form-row">
+      <div class="gfield"><label>Varietà</label>
+        <select class="gv-r-varieta">
+          <option value="">Seleziona...</option>
+          <option>Tartufo Nero Estivo (Scorzone)</option>
+          <option>Tartufo Nero Pregiato</option>
+          <option>Tartufo Bianco Pregiato</option>
+          <option>Tartufo Uncinato</option>
+        </select>
+      </div>
+      <div class="gfield"><label>Kg venduti</label><input type="number" class="gv-r-kg" placeholder="0.000" step="0.001" oninput="calcVTotal()"/></div>
+    </div>
+    <div class="form-row">
+      <div class="gfield" style="grid-column:1/-1;"><label>Prezzo €/kg netto</label><input type="number" class="gv-r-prezzo" placeholder="0.00" step="0.01" oninput="calcVTotal()"/></div>
+    </div>
+    <button type="button" class="ga-riga-del" onclick="removeRigaVendita(this)"><i class="ti ti-trash"></i>&nbsp;Rimuovi prodotto</button>
+  </div>`;
+}
+function addRigaVendita(){
+  document.getElementById('gv-righe-wrap').insertAdjacentHTML('beforeend', rigaVenditaHTML(gvRigaCount++));
+}
+function removeRigaVendita(btn){
+  btn.closest('.ga-riga').remove();
+  calcVTotal();
+}
+
+let glRigaCount = 1;
+function rigaLavoratoHTML(idx){
+  return `<div class="ga-riga" data-riga="${idx}">
+    <div class="form-row">
+      <div class="gfield"><label>Prodotto</label>
+        <select class="gl-r-prodotto">
+          <option value="">Seleziona...</option>
+          <option>Salsa Tartufo Estivo 20%</option>
+          <option>Salsa Tartufata</option>
+          <option>Salsa Tartufi Bianchi</option>
+          <option>Crema Funghi Porcini e Tartufo Bianco</option>
+          <option>Carpaccio di Tartufo</option>
+          <option>Tartufo Macinato</option>
+          <option>Tartufo Intero in Salamoia</option>
+          <option>Crema Carciofi e Tartufo</option>
+          <option>Olio al Tartufo Bianco</option>
+          <option>Olio al Tartufo Nero</option>
+          <option>Burro al Tartufo Estivo</option>
+          <option>Burro al Tartufo Bianco</option>
+          <option>Sale al Tartufo</option>
+          <option>Miele Acacia e Tartufo</option>
+          <option>Pasta al Tartufo Nero</option>
+          <option>Pasta al Tartufo Bianco</option>
+        </select>
+      </div>
+      <div class="gfield"><label>Formato</label>
+        <select class="gl-r-formato">
+          <option>75g</option><option>80g</option><option>90g</option><option>250ml Olio</option>
+          <option>100g</option><option>100ml</option><option>175g</option><option>180g</option>
+          <option>250g</option><option>450g</option><option>500g</option><option>1000ml</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="gfield"><label>Qtà pezzi</label><input type="number" class="gl-r-qty" placeholder="1" step="1" oninput="calcLTotal()"/></div>
+      <div class="gfield"><label>Prezzo €/pz netto</label><input type="number" class="gl-r-prezzo" placeholder="0.00" step="0.01" oninput="calcLTotal()"/></div>
+    </div>
+    <button type="button" class="ga-riga-del" onclick="removeRigaLavorato(this)"><i class="ti ti-trash"></i>&nbsp;Rimuovi prodotto</button>
+  </div>`;
+}
+function addRigaLavorato(){
+  document.getElementById('gl-righe-wrap').insertAdjacentHTML('beforeend', rigaLavoratoHTML(glRigaCount++));
+}
+function removeRigaLavorato(btn){
+  btn.closest('.ga-riga').remove();
+  calcLTotal();
+}
+
+let gfRigaCount = 1;
+function rigaFunghiHTML(idx){
+  return `<div class="ga-riga" data-riga="${idx}">
+    <div class="form-row">
+      <div class="gfield"><label>Varietà</label>
+        <select class="gf-r-varieta">
+          <option value="">Seleziona...</option>
+          <option>Porcini</option>
+          <option>Finferli</option>
+          <option>Barboni</option>
+          <option>Trombette Nere</option>
+          <option>Ovoli</option>
+          <option>Chiodini</option>
+        </select>
+      </div>
+      <div class="gfield"><label>Kg venduti</label><input type="number" class="gf-r-kg" placeholder="0.000" step="0.001" oninput="calcFTotal()"/></div>
+    </div>
+    <div class="form-row">
+      <div class="gfield" style="grid-column:1/-1;"><label>Prezzo €/kg netto</label><input type="number" class="gf-r-prezzo" placeholder="0.00" step="0.01" oninput="calcFTotal()"/></div>
+    </div>
+    <button type="button" class="ga-riga-del" onclick="removeRigaFunghi(this)"><i class="ti ti-trash"></i>&nbsp;Rimuovi prodotto</button>
+  </div>`;
+}
+function addRigaFunghi(){
+  document.getElementById('gf-righe-wrap').insertAdjacentHTML('beforeend', rigaFunghiHTML(gfRigaCount++));
+}
+function removeRigaFunghi(btn){
+  btn.closest('.ga-riga').remove();
+  calcFTotal();
 }
 
 let gaRigaCount = 1;
@@ -1610,67 +1758,122 @@ function saveMovimento(tipo){
   let mov = null;
 
   if(tipo === 'vendita'){
-    const varieta = document.getElementById('gv-varieta').value;
-    const totale  = parseFloat(document.getElementById('gv-totale').value)||0;
-    if(!varieta){ alert('Seleziona la varietà'); return; }
-    if(totale <= 0){ alert('Inserisci kg e prezzo'); return; }
+    const righe = [];
+    document.querySelectorAll('#gv-righe-wrap .ga-riga').forEach(r => {
+      const varieta = r.querySelector('.gv-r-varieta').value;
+      const kg = parseFloat(r.querySelector('.gv-r-kg').value) || 0;
+      const prezzo = parseFloat(r.querySelector('.gv-r-prezzo').value) || 0;
+      if(varieta && kg > 0){
+        righe.push({ varieta, kg, prezzo, totale: +(kg*prezzo).toFixed(2) });
+      }
+    });
+    if(righe.length === 0){ alert('Aggiungi almeno un prodotto con varietà e kg'); return; }
+    const totale = righe.reduce((a,r) => a+r.totale, 0);
+    const nome = righe.length === 1 ? righe[0].varieta : righe.map(r=>r.varieta).join(', ');
     mov = {
       id: Date.now()*1000+Math.floor(Math.random()*1000), tipo: 'vendita',
       data: document.getElementById('gv-data').value,
-      nome: varieta,
+      nome,
       totale,
       fatturato: document.getElementById('gv-fatt').value,
       extra: {
         cliente: document.getElementById('gv-cliente').value.trim(),
-        kg: document.getElementById('gv-kg').value,
-        nfatt: document.getElementById('gv-nfatt').value.trim()
+        nfatt: document.getElementById('gv-nfatt').value.trim(),
+        righe
       }
     };
-    ['gv-cliente','gv-kg','gv-prezzo','gv-totale','gv-nfatt'].forEach(id => document.getElementById(id).value='');
-    document.getElementById('gv-varieta').selectedIndex=0;
+    document.getElementById('gv-cliente').value = '';
+    document.getElementById('gv-nfatt').value = '';
+    document.getElementById('gv-totale').value = '';
+    document.querySelectorAll('#gv-righe-wrap .ga-riga').forEach((r,i) => {
+      if(i > 0){ r.remove(); }
+      else {
+        r.querySelector('.gv-r-varieta').selectedIndex = 0;
+        r.querySelector('.gv-r-kg').value = '';
+        r.querySelector('.gv-r-prezzo').value = '';
+      }
+    });
+    gvRigaCount = 1;
   }
 
   else if(tipo === 'lavorato'){
-    const prodotto = document.getElementById('gl-prodotto').value;
-    const totale   = parseFloat(document.getElementById('gl-totale').value)||0;
-    if(!prodotto){ alert('Seleziona il prodotto'); return; }
-    if(totale <= 0){ alert('Inserisci quantità e prezzo'); return; }
+    const righe = [];
+    document.querySelectorAll('#gl-righe-wrap .ga-riga').forEach(r => {
+      const prodotto = r.querySelector('.gl-r-prodotto').value;
+      const formato = r.querySelector('.gl-r-formato').value;
+      const qty = parseFloat(r.querySelector('.gl-r-qty').value) || 0;
+      const prezzo = parseFloat(r.querySelector('.gl-r-prezzo').value) || 0;
+      if(prodotto && qty > 0){
+        righe.push({ nome: prodotto, formato, qty, prezzo, totale: +(qty*prezzo).toFixed(2) });
+      }
+    });
+    if(righe.length === 0){ alert('Aggiungi almeno un prodotto con quantità e prezzo'); return; }
+    const totale = righe.reduce((a,r) => a+r.totale, 0);
+    const nome = righe.length === 1 ? righe[0].nome : righe.map(r=>r.nome).join(', ');
     mov = {
       id: Date.now()*1000+Math.floor(Math.random()*1000), tipo: 'lavorato',
       data: document.getElementById('gl-data').value,
-      nome: prodotto,
+      nome,
       totale,
       fatturato: document.getElementById('gl-fatt').value,
       extra: {
         cliente: document.getElementById('gl-cliente').value.trim(),
-        formato: document.getElementById('gl-formato').value,
-        qty: document.getElementById('gl-qty').value,
-        nfatt: document.getElementById('gl-nfatt').value.trim()
+        nfatt: document.getElementById('gl-nfatt').value.trim(),
+        righe
       }
     };
-    ['gl-cliente','gl-qty','gl-prezzo','gl-totale','gl-nfatt'].forEach(id => document.getElementById(id).value='');
-    document.getElementById('gl-prodotto').selectedIndex=0;
+    document.getElementById('gl-cliente').value = '';
+    document.getElementById('gl-nfatt').value = '';
+    document.getElementById('gl-totale').value = '';
+    document.querySelectorAll('#gl-righe-wrap .ga-riga').forEach((r,i) => {
+      if(i > 0){ r.remove(); }
+      else {
+        r.querySelector('.gl-r-prodotto').selectedIndex = 0;
+        r.querySelector('.gl-r-formato').selectedIndex = 0;
+        r.querySelector('.gl-r-qty').value = '';
+        r.querySelector('.gl-r-prezzo').value = '';
+      }
+    });
+    glRigaCount = 1;
   }
 
   else if(tipo === 'funghi'){
-    const varieta = document.getElementById('gf-varieta').value;
-    const totale  = parseFloat(document.getElementById('gf-totale').value)||0;
-    if(!varieta){ alert('Seleziona la varietà'); return; }
-    if(totale <= 0){ alert('Inserisci kg e prezzo'); return; }
+    const righe = [];
+    document.querySelectorAll('#gf-righe-wrap .ga-riga').forEach(r => {
+      const varieta = r.querySelector('.gf-r-varieta').value;
+      const kg = parseFloat(r.querySelector('.gf-r-kg').value) || 0;
+      const prezzo = parseFloat(r.querySelector('.gf-r-prezzo').value) || 0;
+      if(varieta && kg > 0){
+        righe.push({ varieta, kg, prezzo, totale: +(kg*prezzo).toFixed(2) });
+      }
+    });
+    if(righe.length === 0){ alert('Aggiungi almeno un prodotto con varietà e kg'); return; }
+    const totale = righe.reduce((a,r) => a+r.totale, 0);
+    const nome = righe.length === 1 ? righe[0].varieta : righe.map(r=>r.varieta).join(', ');
     mov = {
       id: Date.now()*1000+Math.floor(Math.random()*1000), tipo: 'funghi',
       data: document.getElementById('gf-data').value,
-      nome: varieta,
+      nome,
       totale,
       fatturato: document.getElementById('gf-fatt').value,
       extra: {
         cliente: document.getElementById('gf-cliente').value.trim(),
-        kg: document.getElementById('gf-kg').value,
-        nfatt: document.getElementById('gf-nfatt').value.trim()
+        nfatt: document.getElementById('gf-nfatt').value.trim(),
+        righe
       }
     };
-    ['gf-cliente','gf-kg','gf-prezzo','gf-totale','gf-nfatt'].forEach(id => document.getElementById(id).value='');
-    document.getElementById('gf-varieta').selectedIndex=0;
+    document.getElementById('gf-cliente').value = '';
+    document.getElementById('gf-nfatt').value = '';
+    document.getElementById('gf-totale').value = '';
+    document.querySelectorAll('#gf-righe-wrap .ga-riga').forEach((r,i) => {
+      if(i > 0){ r.remove(); }
+      else {
+        r.querySelector('.gf-r-varieta').selectedIndex = 0;
+        r.querySelector('.gf-r-kg').value = '';
+        r.querySelector('.gf-r-prezzo').value = '';
+      }
+    });
+    gfRigaCount = 1;
   }
 
   else if(tipo === 'acquisto'){
@@ -1772,10 +1975,18 @@ function renderMovimenti(){
     const fmt = m.extra && m.extra.formato ? ' · '+m.extra.formato : '';
     const isLav = m.tipo === 'lavorato';
     let dettaglio;
-    if (isAcq && m.extra && Array.isArray(m.extra.righe) && m.extra.righe.length) {
+    if (m.extra && Array.isArray(m.extra.righe) && m.extra.righe.length) {
       dettaglio = m.extra.righe.map(r => {
-        const pu = r.kg > 0 ? (r.totale / r.kg) : 0;
-        return `${r.varieta} · ${r.kg} kg · €${pu.toFixed(2)}/kg`;
+        if (isLav) {
+          const q = r.qty || 0;
+          const pu = q > 0 ? (r.totale / q) : 0;
+          const fmtR = r.formato ? ' · '+r.formato : '';
+          return `${r.nome}${fmtR} · ${q} pz · €${pu.toFixed(2)}/pz`;
+        } else {
+          const kg = r.kg || 0;
+          const pu = kg > 0 ? (r.totale / kg) : 0;
+          return `${r.varieta || r.nome} · ${kg} kg · €${pu.toFixed(2)}/kg`;
+        }
       }).join('<br>');
     } else {
       const peso = m.extra ? parseFloat(isLav ? m.extra.qty : m.extra.kg) || 0 : 0;

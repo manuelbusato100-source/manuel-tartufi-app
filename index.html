@@ -104,6 +104,11 @@ input[type=file]{display:none;}
 
 /* BUTTONS */
 .btn-gold{width:100%;padding:14px;background:var(--gold);color:#fff;border:none;border-radius:var(--r);font-size:12px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Jost',sans-serif;transition:opacity .2s;margin-top:.5rem;}
+.btn-outline-gold{padding:11px;background:transparent;color:var(--gold);border:1.5px dashed var(--gold);border-radius:var(--r);font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Jost',sans-serif;transition:all .2s;}
+.btn-outline-gold:hover{background:var(--gold-dim);}
+.ga-riga{border-top:1.5px dashed var(--border-light);margin-top:14px;padding-top:14px;}
+.ga-riga[data-riga="0"]{border-top:none;margin-top:0;padding-top:0;}
+.ga-riga-del{width:100%;padding:8px;margin-top:6px;background:transparent;color:#c0392b;border:1px solid #e8b8b0;border-radius:var(--rs);font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;font-family:'Jost',sans-serif;}
 .btn-gold:hover{opacity:.88;}
 .btn-gold:disabled{opacity:.35;cursor:not-allowed;}
 .btn-out{flex:1;padding:12px;background:#fff;color:var(--text2);border:1px solid var(--border-light);border-radius:var(--r);font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Jost',sans-serif;transition:all .2s;}
@@ -780,44 +785,55 @@ function doGet(e) {
         <div class="gfield"><label>Data</label><input type="date" id="ga-data"/></div>
         <div class="gfield"><label>Fornitore</label><input type="text" id="ga-fornitore" placeholder="Nome fornitore"/></div>
       </div>
-      <div class="form-row">
-        <div class="gfield"><label>Varietà</label>
-          <select id="ga-varieta">
-            <option value="">Seleziona...</option>
-            <option>Tartufo Nero Estivo (Scorzone)</option>
-            <option>Tartufo Nero Pregiato</option>
-            <option>Tartufo Bianco Pregiato</option>
-            <option>Tartufo Uncinato</option>
-            <option>Porcini</option>
-            <option>Finferli</option>
-            <option>Barboni</option>
-            <option>Trombette Nere</option>
-            <option>Ovoli</option>
-            <option>Chiodini</option>
-          </select>
-        </div>
-        <div class="gfield"><label>Stagione</label>
-          <select id="ga-stagione">
-            <option>Estiva</option><option>Autunnale</option><option>Invernale</option><option>Primaverile</option>
-          </select>
+
+      <div id="ga-righe-wrap">
+        <div class="ga-riga" data-riga="0">
+          <div class="form-row">
+            <div class="gfield"><label>Varietà</label>
+              <select class="ga-r-varieta">
+                <option value="">Seleziona...</option>
+                <option>Tartufo Nero Estivo (Scorzone)</option>
+                <option>Tartufo Nero Pregiato</option>
+                <option>Tartufo Bianco Pregiato</option>
+                <option>Tartufo Uncinato</option>
+                <option>Porcini</option>
+                <option>Finferli</option>
+                <option>Barboni</option>
+                <option>Trombette Nere</option>
+                <option>Ovoli</option>
+                <option>Chiodini</option>
+              </select>
+            </div>
+            <div class="gfield"><label>Stagione</label>
+              <select class="ga-r-stagione">
+                <option>Estiva</option><option>Autunnale</option><option>Invernale</option><option>Primaverile</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="gfield"><label>Kg acquistati</label><input type="number" class="ga-r-kg" placeholder="0.000" step="0.001" oninput="calcATotal()"/></div>
+            <div class="gfield"><label>Prezzo €/kg</label><input type="number" class="ga-r-prezzo" placeholder="0.00" step="0.01" oninput="calcATotal()"/></div>
+          </div>
+          <div class="form-row">
+            <div class="gfield" style="grid-column:1/-1;"><label>Qualità</label>
+              <select class="ga-r-qualita">
+                <option>Extra</option><option>Prima</option><option>Seconda</option><option>Terza</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="form-row">
-        <div class="gfield"><label>Kg acquistati</label><input type="number" id="ga-kg" placeholder="0.000" step="0.001" oninput="calcATotal()"/></div>
-        <div class="gfield"><label>Prezzo €/kg</label><input type="number" id="ga-prezzo" placeholder="0.00" step="0.01" oninput="calcATotal()"/></div>
-      </div>
-      <div class="form-row">
+
+      <button type="button" class="btn-outline-gold" onclick="addRigaAcquisto()" style="width:100%;margin-top:.6rem;"><i class="ti ti-plus"></i>&nbsp;Aggiungi un altro prodotto</button>
+
+      <div class="form-row" style="margin-top:.75rem;">
         <div class="gfield"><label>Totale €</label><input type="number" id="ga-totale" placeholder="0.00" step="0.01" readonly/></div>
         <div class="gfield"><label>Fatturato?</label>
           <select id="ga-fatt"><option value="SI">SI</option><option value="NO">NO</option></select>
         </div>
       </div>
       <div class="form-row">
-        <div class="gfield" style="grid-column:1/-1;"><label>Qualità</label>
-          <select id="ga-qualita">
-            <option>Extra</option><option>Prima</option><option>Seconda</option><option>Terza</option>
-          </select>
-        </div>
+        <div class="gfield" style="grid-column:1/-1;"><label>N° Fattura</label><input type="text" id="ga-nfatt" placeholder="opzionale"/></div>
       </div>
       <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('acquisto')"><i class="ti ti-device-floppy"></i>Registra acquisto</button>
     </div>
@@ -1526,9 +1542,62 @@ function calcLTotal(){
   document.getElementById('gl-totale').value = (q*p).toFixed(2);
 }
 function calcATotal(){
-  const kg = parseFloat(document.getElementById('ga-kg').value)||0;
-  const p  = parseFloat(document.getElementById('ga-prezzo').value)||0;
-  document.getElementById('ga-totale').value = (kg*p).toFixed(2);
+  let tot = 0;
+  document.querySelectorAll('#ga-righe-wrap .ga-riga').forEach(r => {
+    const kg = parseFloat(r.querySelector('.ga-r-kg').value) || 0;
+    const p  = parseFloat(r.querySelector('.ga-r-prezzo').value) || 0;
+    tot += kg * p;
+  });
+  document.getElementById('ga-totale').value = tot.toFixed(2);
+}
+
+let gaRigaCount = 1;
+function rigaAcquistoHTML(idx){
+  return `<div class="ga-riga" data-riga="${idx}">
+    <div class="form-row">
+      <div class="gfield"><label>Varietà</label>
+        <select class="ga-r-varieta">
+          <option value="">Seleziona...</option>
+          <option>Tartufo Nero Estivo (Scorzone)</option>
+          <option>Tartufo Nero Pregiato</option>
+          <option>Tartufo Bianco Pregiato</option>
+          <option>Tartufo Uncinato</option>
+          <option>Porcini</option>
+          <option>Finferli</option>
+          <option>Barboni</option>
+          <option>Trombette Nere</option>
+          <option>Ovoli</option>
+          <option>Chiodini</option>
+        </select>
+      </div>
+      <div class="gfield"><label>Stagione</label>
+        <select class="ga-r-stagione">
+          <option>Estiva</option><option>Autunnale</option><option>Invernale</option><option>Primaverile</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="gfield"><label>Kg acquistati</label><input type="number" class="ga-r-kg" placeholder="0.000" step="0.001" oninput="calcATotal()"/></div>
+      <div class="gfield"><label>Prezzo €/kg</label><input type="number" class="ga-r-prezzo" placeholder="0.00" step="0.01" oninput="calcATotal()"/></div>
+    </div>
+    <div class="form-row">
+      <div class="gfield" style="grid-column:1/-1;"><label>Qualità</label>
+        <select class="ga-r-qualita">
+          <option>Extra</option><option>Prima</option><option>Seconda</option><option>Terza</option>
+        </select>
+      </div>
+    </div>
+    <button type="button" class="ga-riga-del" onclick="removeRigaAcquisto(this)"><i class="ti ti-trash"></i>&nbsp;Rimuovi prodotto</button>
+  </div>`;
+}
+
+function addRigaAcquisto(){
+  document.getElementById('ga-righe-wrap').insertAdjacentHTML('beforeend', rigaAcquistoHTML(gaRigaCount++));
+}
+
+function removeRigaAcquisto(btn){
+  btn.closest('.ga-riga').remove();
+  calcATotal();
 }
 
 function saveMovimento(tipo){
@@ -1600,25 +1669,44 @@ function saveMovimento(tipo){
   }
 
   else if(tipo === 'acquisto'){
-    const varieta = document.getElementById('ga-varieta').value;
-    const totale  = parseFloat(document.getElementById('ga-totale').value)||0;
-    if(!varieta){ alert('Seleziona la varietà'); return; }
-    if(totale <= 0){ alert('Inserisci kg e prezzo'); return; }
+    const righe = [];
+    document.querySelectorAll('#ga-righe-wrap .ga-riga').forEach(r => {
+      const varieta = r.querySelector('.ga-r-varieta').value;
+      const kg = parseFloat(r.querySelector('.ga-r-kg').value) || 0;
+      const prezzo = parseFloat(r.querySelector('.ga-r-prezzo').value) || 0;
+      const stagione = r.querySelector('.ga-r-stagione').value;
+      const qualita = r.querySelector('.ga-r-qualita').value;
+      if(varieta && kg > 0){
+        righe.push({ varieta, kg, prezzo, stagione, qualita, totale: +(kg*prezzo).toFixed(2) });
+      }
+    });
+    if(righe.length === 0){ alert('Aggiungi almeno un prodotto con varietà e kg'); return; }
+    const totale = righe.reduce((a,r) => a+r.totale, 0);
+    const nome = righe.length === 1 ? righe[0].varieta : righe.map(r=>r.varieta).join(', ');
     mov = {
       id: Date.now(), tipo: 'acquisto',
       data: document.getElementById('ga-data').value,
-      nome: varieta,
+      nome,
       totale,
       fatturato: document.getElementById('ga-fatt').value,
       extra: {
         fornitore: document.getElementById('ga-fornitore').value.trim(),
-        kg: document.getElementById('ga-kg').value,
-        stagione: document.getElementById('ga-stagione').value,
-        qualita: document.getElementById('ga-qualita').value
+        nfatt: document.getElementById('ga-nfatt').value.trim(),
+        righe
       }
     };
-    ['ga-fornitore','ga-kg','ga-prezzo','ga-totale'].forEach(id => document.getElementById(id).value='');
-    document.getElementById('ga-varieta').selectedIndex=0;
+    document.getElementById('ga-fornitore').value = '';
+    document.getElementById('ga-nfatt').value = '';
+    document.getElementById('ga-totale').value = '';
+    document.querySelectorAll('#ga-righe-wrap .ga-riga').forEach((r,i) => {
+      if(i > 0){ r.remove(); }
+      else {
+        r.querySelector('.ga-r-varieta').selectedIndex = 0;
+        r.querySelector('.ga-r-kg').value = '';
+        r.querySelector('.ga-r-prezzo').value = '';
+      }
+    });
+    gaRigaCount = 1;
   }
 
   if(!mov) return;
@@ -1678,12 +1766,20 @@ function renderMovimenti(){
     const badge = `<span class="badge-f ${m.fatturato==='SI'?'si':'no'}">${m.fatturato}</span>`;
     const fmt = m.extra && m.extra.formato ? ' · '+m.extra.formato : '';
     const isLav = m.tipo === 'lavorato';
-    const peso = m.extra ? parseFloat(isLav ? m.extra.qty : m.extra.kg) || 0 : 0;
-    const unitLabel = isLav ? 'pz' : 'kg';
-    let dettaglio = `${m.nome}${fmt}`;
-    if(peso > 0){
-      const prezzoUnit = m.totale / peso;
-      dettaglio += ` · ${peso} ${unitLabel} · €${prezzoUnit.toFixed(2)}/${unitLabel}`;
+    let dettaglio;
+    if (isAcq && m.extra && Array.isArray(m.extra.righe) && m.extra.righe.length) {
+      dettaglio = m.extra.righe.map(r => {
+        const pu = r.kg > 0 ? (r.totale / r.kg) : 0;
+        return `${r.varieta} · ${r.kg} kg · €${pu.toFixed(2)}/kg`;
+      }).join('<br>');
+    } else {
+      const peso = m.extra ? parseFloat(isLav ? m.extra.qty : m.extra.kg) || 0 : 0;
+      const unitLabel = isLav ? 'pz' : 'kg';
+      dettaglio = `${m.nome}${fmt}`;
+      if(peso > 0){
+        const prezzoUnit = m.totale / peso;
+        dettaglio += ` · ${peso} ${unitLabel} · €${prezzoUnit.toFixed(2)}/${unitLabel}`;
+      }
     }
     return `<div class="mov">
       <div class="mov-dot ${m.tipo}"></div>

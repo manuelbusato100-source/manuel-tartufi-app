@@ -701,7 +701,7 @@ function doGet(e) {
       <div class="form-row">
         <div class="gfield" style="grid-column:1/-1;"><label>N° Fattura</label><input type="text" id="gv-nfatt" placeholder="opzionale"/></div>
       </div>
-      <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('vendita')"><i class="ti ti-device-floppy"></i>Registra vendita</button>
+      <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('vendita', this)"><i class="ti ti-device-floppy"></i>Registra vendita</button>
     </div>
 
     <!-- VENDITA LAVORATO -->
@@ -761,7 +761,7 @@ function doGet(e) {
       <div class="form-row">
         <div class="gfield" style="grid-column:1/-1;"><label>N° Fattura</label><input type="text" id="gl-nfatt" placeholder="opzionale"/></div>
       </div>
-      <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('lavorato')"><i class="ti ti-device-floppy"></i>Registra vendita</button>
+      <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('lavorato', this)"><i class="ti ti-device-floppy"></i>Registra vendita</button>
     </div>
 
     <!-- VENDITA FUNGHI -->
@@ -804,7 +804,7 @@ function doGet(e) {
       <div class="form-row">
         <div class="gfield" style="grid-column:1/-1;"><label>N° Fattura</label><input type="text" id="gf-nfatt" placeholder="opzionale"/></div>
       </div>
-      <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('funghi')"><i class="ti ti-device-floppy"></i>Registra vendita</button>
+      <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('funghi', this)"><i class="ti ti-device-floppy"></i>Registra vendita</button>
     </div>
 
     <!-- ACQUISTO -->
@@ -863,7 +863,7 @@ function doGet(e) {
       <div class="form-row">
         <div class="gfield" style="grid-column:1/-1;"><label>N° Fattura</label><input type="text" id="ga-nfatt" placeholder="opzionale"/></div>
       </div>
-      <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('acquisto')"><i class="ti ti-device-floppy"></i>Registra acquisto</button>
+      <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('acquisto', this)"><i class="ti ti-device-floppy"></i>Registra acquisto</button>
     </div>
   </div>
 
@@ -1749,10 +1749,14 @@ function removeRigaAcquisto(btn){
 }
 
 let gSalvandoMovimento = false;
-function saveMovimento(tipo){
+function saveMovimento(tipo, btnEl){
   if (gSalvandoMovimento) return; // blocca doppi click/tap ravvicinati
   gSalvandoMovimento = true;
-  setTimeout(() => { gSalvandoMovimento = false; }, 1200);
+  if (btnEl) btnEl.disabled = true;
+  setTimeout(() => {
+    gSalvandoMovimento = false;
+    if (btnEl) btnEl.disabled = false;
+  }, 1500);
 
   setToday();
   let mov = null;
@@ -1932,13 +1936,12 @@ function saveMovimento(tipo){
     }
   });
 
-  // feedback visivo
-  const btn = document.activeElement;
-  if(btn && btn.tagName === 'BUTTON'){
-    const orig = btn.innerHTML;
-    btn.innerHTML = '<i class="ti ti-check"></i> Registrato!';
-    btn.disabled = true;
-    setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 1800);
+  // feedback visivo (usa il riferimento diretto al bottone: su iOS il tap non dà sempre il focus)
+  if(btnEl){
+    const orig = btnEl.innerHTML;
+    btnEl.innerHTML = '<i class="ti ti-check"></i> Registrato!';
+    btnEl.disabled = true;
+    setTimeout(() => { btnEl.innerHTML = orig; btnEl.disabled = false; }, 1800);
   }
 }
 

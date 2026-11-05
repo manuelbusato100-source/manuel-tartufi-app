@@ -1547,7 +1547,8 @@ function switchGTab(tab){
 }
 
 function setToday(){
-  const t = new Date().toISOString().split('T')[0];
+  const _n = new Date();
+  const t = _n.getFullYear()+'-'+String(_n.getMonth()+1).padStart(2,'0')+'-'+String(_n.getDate()).padStart(2,'0');
   ['gv-data','gl-data','gf-data','ga-data'].forEach(id => {
     const el = document.getElementById(id);
     if(el && !el.value) el.value = t;
@@ -3354,7 +3355,8 @@ function renderCrediti() {
 
 // Init crediti e fornitori date
 window.addEventListener('load', () => {
-  const t = new Date().toISOString().split('T')[0];
+  const _n = new Date();
+  const t = _n.getFullYear()+'-'+String(_n.getMonth()+1).padStart(2,'0')+'-'+String(_n.getDate()).padStart(2,'0');
   ['fn-data','cr-data'].forEach(id => { const el=document.getElementById(id); if(el&&!el.value) el.value=t; });
 });
 // ===== END FORNITORI & CREDITI =====
@@ -3469,7 +3471,8 @@ window.switchGSection = function(section) {
 
 // Init spese data
 window.addEventListener('load', () => {
-  const t = new Date().toISOString().split('T')[0];
+  const _n = new Date();
+  const t = _n.getFullYear()+'-'+String(_n.getMonth()+1).padStart(2,'0')+'-'+String(_n.getDate()).padStart(2,'0');
   const spData = document.getElementById('sp-data');
   if (spData && !spData.value) spData.value = t;
   renderSpese();
@@ -3497,7 +3500,8 @@ function getUltimiMesi(n) {
   const now = new Date();
   for (let i = n-1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    mesi.push({ key: d.toISOString().slice(0,7), label: d.toLocaleString('it-IT',{month:'short',year:'2-digit'}) });
+    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    mesi.push({ key, label: d.toLocaleString('it-IT',{month:'short',year:'2-digit'}) });
   }
   return mesi;
 }
@@ -3874,7 +3878,7 @@ function saveFattura() {
   if (!cliente) { alert('Inserisci il nome del cliente'); return; }
   if (!tipo) { alert('Seleziona il tipo di prodotto'); return; }
   if (peso <= 0 || prezzo <= 0) { alert('Inserisci peso e prezzo'); return; }
-  if (!data) data = new Date().toISOString().split('T')[0];
+  if (!data) { const _n = new Date(); data = _n.getFullYear()+'-'+String(_n.getMonth()+1).padStart(2,'0')+'-'+String(_n.getDate()).padStart(2,'0'); }
 
   const ft = {
     id: 'ft_' + Date.now(),

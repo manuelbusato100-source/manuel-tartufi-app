@@ -3484,6 +3484,7 @@ const CHART_ROSSO = '#6B1111';
 const CHART_BLU = '#0D2B4E';
 const CHART_VERDE = '#1A4A1A';
 const CHART_VIOLA = '#7B3F7F';
+const CHART_MARRONE = '#7A5C3E';
 
 let chartInstances = {};
 
@@ -3508,9 +3509,10 @@ function aggiornaGrafici() {
   const datiMensili = mesi.map(m => {
     const fresco = gMovimenti.filter(x=>x.tipo==='vendita'&&(x.data||'').startsWith(m.key)).reduce((a,x)=>a+x.totale,0);
     const lavorati = gMovimenti.filter(x=>x.tipo==='lavorato'&&(x.data||'').startsWith(m.key)).reduce((a,x)=>a+x.totale,0);
+    const funghi = gMovimenti.filter(x=>x.tipo==='funghi'&&(x.data||'').startsWith(m.key)).reduce((a,x)=>a+x.totale,0);
     const acquisti = gMovimenti.filter(x=>x.tipo==='acquisto'&&(x.data||'').startsWith(m.key)).reduce((a,x)=>a+x.totale,0);
     const spese = (gSpese||[]).filter(x=>(x.data||'').startsWith(m.key)).reduce((a,x)=>a+x.importo,0);
-    return { fresco, lavorati, acquisti, spese };
+    return { fresco, lavorati, funghi, acquisti, spese };
   });
 
   // KPI mini
@@ -3543,6 +3545,7 @@ function aggiornaGrafici() {
         datasets: [
           { label: 'Fresco', data: datiMensili.map(d=>d.fresco), borderColor: CHART_GOLD, backgroundColor: CHART_GOLD+'22', tension: 0.4, fill: true, pointRadius: 4 },
           { label: 'Lavorati', data: datiMensili.map(d=>d.lavorati), borderColor: CHART_NERO, backgroundColor: CHART_NERO+'22', tension: 0.4, fill: true, pointRadius: 4 },
+          { label: 'Funghi', data: datiMensili.map(d=>d.funghi), borderColor: CHART_MARRONE, backgroundColor: CHART_MARRONE+'22', tension: 0.4, fill: true, pointRadius: 4 },
           { label: 'Acquisti', data: datiMensili.map(d=>d.acquisti), borderColor: CHART_ROSSO, backgroundColor: 'transparent', tension: 0.4, borderDash: [5,5], pointRadius: 3 },
         ]
       },
@@ -3555,13 +3558,14 @@ function aggiornaGrafici() {
   const ctxR = document.getElementById('chart-ripartizione');
   const totF = gMovimenti.filter(x=>x.tipo==='vendita').reduce((a,x)=>a+x.totale,0);
   const totL = gMovimenti.filter(x=>x.tipo==='lavorato').reduce((a,x)=>a+x.totale,0);
+  const totFU = gMovimenti.filter(x=>x.tipo==='funghi').reduce((a,x)=>a+x.totale,0);
   const totA = gMovimenti.filter(x=>x.tipo==='acquisto').reduce((a,x)=>a+x.totale,0);
   if (ctxR) {
     chartInstances['ripartizione'] = new Chart(ctxR, {
       type: 'doughnut',
       data: {
-        labels: ['Fresco', 'Lavorati', 'Acquisti'],
-        datasets: [{ data: [totF, totL, totA], backgroundColor: [CHART_GOLD, CHART_NERO, CHART_ROSSO], borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }]
+        labels: ['Fresco', 'Lavorati', 'Funghi', 'Acquisti'],
+        datasets: [{ data: [totF, totL, totFU, totA], backgroundColor: [CHART_GOLD, CHART_NERO, CHART_MARRONE, CHART_ROSSO], borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }]
       },
       options: { ...defaultOpts, cutout: '65%', plugins: { ...defaultOpts.plugins, legend: { ...defaultOpts.plugins.legend, position: 'bottom' } } }
     });
@@ -3601,7 +3605,7 @@ function aggiornaGrafici() {
       data: {
         labels: mesi.map(m=>m.label),
         datasets: [
-          { label: 'Fatturato', data: datiMensili.map(d=>d.fresco+d.lavorati), backgroundColor: CHART_GOLD+'CC', borderRadius: 4 },
+          { label: 'Fatturato', data: datiMensili.map(d=>d.fresco+d.lavorati+d.funghi), backgroundColor: CHART_GOLD+'CC', borderRadius: 4 },
           { label: 'Spese', data: datiMensili.map(d=>d.spese), backgroundColor: CHART_VIOLA+'CC', borderRadius: 4 },
           { label: 'Acquisti', data: datiMensili.map(d=>d.acquisti), backgroundColor: CHART_ROSSO+'CC', borderRadius: 4 },
         ]

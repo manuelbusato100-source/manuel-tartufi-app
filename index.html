@@ -818,19 +818,7 @@ function doGet(e) {
         <div class="ga-riga" data-riga="0">
           <div class="form-row">
             <div class="gfield"><label>Varietà</label>
-              <select class="ga-r-varieta">
-                <option value="">Seleziona...</option>
-                <option>Tartufo Nero Estivo (Scorzone)</option>
-                <option>Tartufo Nero Pregiato</option>
-                <option>Tartufo Bianco Pregiato</option>
-                <option>Tartufo Uncinato</option>
-                <option>Porcini</option>
-                <option>Finferli</option>
-                <option>Barboni</option>
-                <option>Trombette Nere</option>
-                <option>Ovoli</option>
-                <option>Chiodini</option>
-              </select>
+              <select class="ga-r-varieta" onchange="acqCambiaProdotto(this)"></select>
             </div>
             <div class="gfield"><label>Stagione</label>
               <select class="ga-r-stagione">
@@ -842,6 +830,7 @@ function doGet(e) {
             <div class="gfield"><label>Kg acquistati</label><input type="number" class="ga-r-kg" placeholder="0.000" step="0.001" oninput="calcATotal()"/></div>
             <div class="gfield"><label>Prezzo €/kg</label><input type="number" class="ga-r-prezzo" placeholder="0.00" step="0.01" oninput="calcATotal()"/></div>
           </div>
+          <div class="form-row ga-r-formato-row" style="display:none;"><div class="gfield" style="grid-column:1/-1;"><label>Formato</label><select class="ga-r-formato"><option value="">—</option><option>75g</option><option>80g</option><option>90g</option><option>100g</option><option>175g</option><option>180g</option><option>250g</option><option>450g</option><option>500g</option><option>100ml</option><option>250ml Olio</option><option>1000ml</option></select></div></div>
           <div class="form-row">
             <div class="gfield" style="grid-column:1/-1;"><label>Qualità</label>
               <select class="ga-r-qualita">
@@ -1700,24 +1689,37 @@ function removeRigaFunghi(btn){
   calcFTotal();
 }
 
+const ACQ_FRESCHI = ['Tartufo Nero Estivo (Scorzone)','Tartufo Nero Pregiato','Tartufo Bianco Pregiato','Tartufo Uncinato','Porcini','Finferli','Barboni','Trombette Nere','Ovoli','Chiodini'];
+const ACQ_LAVORATI = ['Salsa Tartufo Estivo 20%','Salsa Tartufata','Salsa Tartufi Bianchi','Crema Funghi Porcini e Tartufo Bianco','Carpaccio di Tartufo','Tartufo Macinato','Tartufo Intero in Salamoia','Crema Carciofi e Tartufo','Olio al Tartufo Bianco','Olio al Tartufo Nero','Burro al Tartufo Estivo','Burro al Tartufo Bianco','Sale al Tartufo','Miele Acacia e Tartufo','Pasta al Tartufo Nero','Pasta al Tartufo Bianco'];
+const ACQ_OPT = '<option value="">Seleziona...</option><optgroup label="Tartufi e funghi freschi">' + ACQ_FRESCHI.map(x=>'<option>'+x+'</option>').join('') + '</optgroup><optgroup label="Prodotti lavorati">' + ACQ_LAVORATI.map(x=>'<option>'+x+'</option>').join('') + '</optgroup>';
+
+// Adatta la riga acquisto al tipo di prodotto: freschi = kg + stagione + qualità, lavorati = pezzi + formato
+function acqCambiaProdotto(sel){
+  const riga = sel.closest('.ga-riga');
+  const lav = ACQ_LAVORATI.includes(sel.value);
+  riga.dataset.unita = lav ? 'pz' : 'kg';
+  const stag = riga.querySelector('.ga-r-stagione').closest('.gfield');
+  const qual = riga.querySelector('.ga-r-qualita').closest('.form-row');
+  const fmt = riga.querySelector('.ga-r-formato-row');
+  stag.style.display = lav ? 'none' : '';
+  qual.style.display = lav ? 'none' : '';
+  fmt.style.display = lav ? '' : 'none';
+  riga.querySelector('.ga-r-kg').closest('.gfield').querySelector('label').textContent = lav ? 'Qtà pezzi' : 'Kg acquistati';
+  riga.querySelector('.ga-r-prezzo').closest('.gfield').querySelector('label').textContent = lav ? 'Prezzo €/pz' : 'Prezzo €/kg';
+  const kgIn = riga.querySelector('.ga-r-kg');
+  kgIn.step = lav ? '1' : '0.001';
+  kgIn.placeholder = lav ? '1' : '0.000';
+}
+window.addEventListener('load', () => {
+  document.querySelectorAll('#ga-righe-wrap .ga-r-varieta').forEach(sel => { if(sel.options.length <= 1) sel.innerHTML = ACQ_OPT; });
+});
+
 let gaRigaCount = 1;
 function rigaAcquistoHTML(idx){
   return `<div class="ga-riga" data-riga="${idx}">
     <div class="form-row">
       <div class="gfield"><label>Varietà</label>
-        <select class="ga-r-varieta">
-          <option value="">Seleziona...</option>
-          <option>Tartufo Nero Estivo (Scorzone)</option>
-          <option>Tartufo Nero Pregiato</option>
-          <option>Tartufo Bianco Pregiato</option>
-          <option>Tartufo Uncinato</option>
-          <option>Porcini</option>
-          <option>Finferli</option>
-          <option>Barboni</option>
-          <option>Trombette Nere</option>
-          <option>Ovoli</option>
-          <option>Chiodini</option>
-        </select>
+        <select class="ga-r-varieta" onchange="acqCambiaProdotto(this)">${ACQ_OPT}</select>
       </div>
       <div class="gfield"><label>Stagione</label>
         <select class="ga-r-stagione">
@@ -1729,6 +1731,7 @@ function rigaAcquistoHTML(idx){
       <div class="gfield"><label>Kg acquistati</label><input type="number" class="ga-r-kg" placeholder="0.000" step="0.001" oninput="calcATotal()"/></div>
       <div class="gfield"><label>Prezzo €/kg</label><input type="number" class="ga-r-prezzo" placeholder="0.00" step="0.01" oninput="calcATotal()"/></div>
     </div>
+    <div class="form-row ga-r-formato-row" style="display:none;"><div class="gfield" style="grid-column:1/-1;"><label>Formato</label><select class="ga-r-formato"><option value="">—</option><option>75g</option><option>80g</option><option>90g</option><option>100g</option><option>175g</option><option>180g</option><option>250g</option><option>450g</option><option>500g</option><option>100ml</option><option>250ml Olio</option><option>1000ml</option></select></div></div>
     <div class="form-row">
       <div class="gfield" style="grid-column:1/-1;"><label>Qualità</label>
         <select class="ga-r-qualita">
@@ -1889,8 +1892,14 @@ function saveMovimento(tipo, btnEl){
       const prezzo = parseFloat(r.querySelector('.ga-r-prezzo').value) || 0;
       const stagione = r.querySelector('.ga-r-stagione').value;
       const qualita = r.querySelector('.ga-r-qualita').value;
+      const lav = ACQ_LAVORATI.includes(varieta);
       if(varieta && kg > 0){
-        righe.push({ varieta, kg, prezzo, stagione, qualita, totale: +(kg*prezzo).toFixed(2) });
+        if(lav){
+          const formato = r.querySelector('.ga-r-formato').value;
+          righe.push({ varieta, nome: varieta, qty: kg, prezzo, formato, unita: 'pz', totale: +(kg*prezzo).toFixed(2) });
+        } else {
+          righe.push({ varieta, kg, prezzo, stagione, qualita, totale: +(kg*prezzo).toFixed(2) });
+        }
       }
     });
     if(righe.length === 0){ alert('Aggiungi almeno un prodotto con varietà e kg'); return; }
@@ -1917,6 +1926,7 @@ function saveMovimento(tipo, btnEl){
         r.querySelector('.ga-r-varieta').selectedIndex = 0;
         r.querySelector('.ga-r-kg').value = '';
         r.querySelector('.ga-r-prezzo').value = '';
+        acqCambiaProdotto(r.querySelector('.ga-r-varieta'));
       }
     });
     gaRigaCount = 1;
@@ -1981,7 +1991,7 @@ function renderMovimenti(){
     let dettaglio;
     if (m.extra && Array.isArray(m.extra.righe) && m.extra.righe.length) {
       dettaglio = m.extra.righe.map(r => {
-        if (isLav) {
+        if (isLav || r.unita === 'pz') {
           const q = r.qty || 0;
           const pu = q > 0 ? (r.totale / q) : 0;
           const fmtR = r.formato ? ' · '+r.formato : '';

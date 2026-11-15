@@ -244,6 +244,16 @@ input[type=file]{display:none;}
 .forn-name{font-size:14px;font-weight:500;}
 .forn-varieta{font-size:10px;color:#1a1814;letter-spacing:.06em;text-transform:uppercase;margin-top:2px;}
 .forn-fatture{margin-top:.75rem;border-top:1px solid var(--border-light);padding-top:.5rem;}
+.forn-foto-bar{display:flex;align-items:center;justify-content:space-between;margin-top:.6rem;}
+.forn-foto-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border:1px solid var(--gold,#B8963E);color:var(--gold,#B8963E);background:transparent;border-radius:var(--rs,6px);font-size:10px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif;}
+.forn-foto-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:.5rem;}
+.forn-foto-th{position:relative;width:72px;height:72px;border-radius:6px;overflow:hidden;border:1px solid #e5e0d5;cursor:pointer;background:#f5f2ea;}
+.forn-foto-th img{width:100%;height:100%;object-fit:cover;display:block;}
+.forn-foto-th span{position:absolute;left:0;right:0;bottom:0;background:rgba(26,24,20,.65);color:#fff;font-size:9px;text-align:center;padding:2px 0;}
+#foto-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:99999;display:none;flex-direction:column;align-items:center;justify-content:center;}
+#foto-lightbox img{max-width:96vw;max-height:80vh;object-fit:contain;}
+#foto-lightbox .lb-bar{display:flex;gap:12px;margin-top:14px;}
+#foto-lightbox button{padding:9px 16px;border-radius:6px;border:1px solid #fff;background:transparent;color:#fff;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;}
 .fatt-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f5f5f5;}
 .fatt-item:last-child{border-bottom:none;}
 .fatt-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
@@ -3258,8 +3268,95 @@ function toggleFatturaStato(fornId, fattId) {
 function deleteForn(id) {
   if (!confirm('Eliminare questo fornitore e tutte le sue fatture?')) return;
   gFornitori = gFornitori.filter(f => f.id !== id);
+  fotoEliminaTutte(id);
   localStorage.setItem('mt_fornitori', JSON.stringify(gFornitori));
   renderFornitori();
+}
+
+// ===== FOTO FATTURE (salvate sul dispositivo, in IndexedDB) =====
+let _fotoDb = null;
+function fotoDbOpen(){
+  return new Promise((res, rej) => {
+    if(_fotoDb) return res(_fotoDb);
+    const rq = indexedDB.open('mt_foto', 1);
+    rq.onupgradeneeded = () => { const st = rq.result.createObjectStore('foto', {keyPath:'id'}); st.createIndex('fornId','fornId'); };
+    rq.onsuccess = () => { _fotoDb = rq.result; res(_fotoDb); };
+    rq.onerror = () => rej(rq.error);
+  });
+}
+function fotoComprimi(file){
+  return new Promise((res, rej) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const MAX = 1800;
+      const k = Math.min(1, MAX / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => b ? res(b) : rej(new Error('compressione fallita')), 'image/jpeg', 0.75);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('immagine non leggibile')); };
+    img.src = url;
+  });
+}
+async function fotoAggiungi(fornId, input){
+  const files = Array.from(input.files || []);
+  input.value = '';
+  if(!files.length) return;
+  try {
+    const db = await fotoDbOpen();
+    for(const f of files){
+      const blob = await fotoComprimi(f);
+      const rec = { id: 'f'+Date.now()+Math.floor(Math.random()*1000), fornId, data: new Date().toISOString ? (()=>{const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');})() : '', blob };
+      await new Promise((r, j) => { const tx = db.transaction('foto','readwrite'); tx.objectStore('foto').put(rec); tx.oncomplete = r; tx.onerror = () => j(tx.error); });
+    }
+    fornCaricaFoto();
+  } catch(e){ alert('Non riesco a salvare la foto: '+e.message); }
+}
+async function fotoLista(fornId){
+  const db = await fotoDbOpen();
+  return new Promise((res, rej) => {
+    const rq = db.transaction('foto').objectStore('foto').index('fornId').getAll(fornId);
+    rq.onsuccess = () => res(rq.result.sort((a,b)=> (b.id).localeCompare(a.id)));
+    rq.onerror = () => rej(rq.error);
+  });
+}
+async function fotoElimina(id){
+  const db = await fotoDbOpen();
+  return new Promise((res, rej) => { const tx = db.transaction('foto','readwrite'); tx.objectStore('foto').delete(id); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+}
+async function fotoEliminaTutte(fornId){
+  try { for(const f of await fotoLista(fornId)) await fotoElimina(f.id); } catch(e){}
+}
+let _lbId = null, _lbUrl = null;
+function fotoApri(id, fornId){
+  fotoLista(fornId).then(list => {
+    const f = list.find(x => x.id === id); if(!f) return;
+    _lbId = id; if(_lbUrl) URL.revokeObjectURL(_lbUrl);
+    _lbUrl = URL.createObjectURL(f.blob);
+    document.getElementById('lb-img').src = _lbUrl;
+    document.getElementById('foto-lightbox').style.display = 'flex';
+  });
+}
+function fotoLbChiudi(){ document.getElementById('foto-lightbox').style.display = 'none'; _lbId = null; }
+async function fotoLbElimina(){
+  if(!_lbId || !confirm('Eliminare questa foto?')) return;
+  await fotoElimina(_lbId); fotoLbChiudi(); fornCaricaFoto();
+}
+async function fornCaricaFoto(){
+  const grids = document.querySelectorAll('.forn-foto-grid');
+  for(const g of grids){
+    const fornId = Number(g.dataset.forn);
+    try {
+      const list = await fotoLista(fornId);
+      g.innerHTML = list.map(f => {
+        const u = URL.createObjectURL(f.blob);
+        return `<div class="forn-foto-th" onclick="fotoApri('${f.id}',${fornId})"><img src="${u}"/><span>${f.data||''}</span></div>`;
+      }).join('');
+    } catch(e){ g.innerHTML = ''; }
+  }
 }
 
 function renderFornitori() {
@@ -3282,14 +3379,21 @@ function renderFornitori() {
         </div>
         <button class="mov-del" onclick="deleteForn(${f.id})" title="Elimina">×</button>
       </div>
+      <div class="forn-foto-bar">
+        <label class="forn-foto-btn"><i class="ti ti-camera"></i>&nbsp;Foto fattura
+          <input type="file" accept="image/*" capture="environment" multiple style="display:none;" onchange="fotoAggiungi(${f.id}, this)"/>
+        </label>
+      </div>
+      <div class="forn-foto-grid" data-forn="${f.id}"></div>
       ${f.fatture.length ? `
-      <div style="display:flex;gap:12px;font-size:11px;">
+      <div style="display:flex;gap:12px;font-size:11px;margin-top:.5rem;">
         <span style="color:#E74C3C;">🔴 Da pagare: €${totApert.toFixed(2)}</span>
         <span style="color:#27AE60;">🟢 Pagate: €${totPag.toFixed(2)}</span>
       </div>
       <div class="forn-fatture">${fatture}</div>` : '<div style="font-size:11px;color:var(--text3);margin-top:.4rem;">Nessuna fattura</div>'}
     </div>`;
   }).join('');
+  fornCaricaFoto();
 }
 
 // ===== CREDITI =====
@@ -3971,5 +4075,6 @@ function renderFatture() {
 // ===== END FATTURE =====
 
 </script>
+<div id="foto-lightbox"><img id="lb-img" alt="Fattura"/><div class="lb-bar"><button onclick="fotoLbElimina()">Elimina</button><button onclick="fotoLbChiudi()">Chiudi</button></div></div>
 </body>
 </html>

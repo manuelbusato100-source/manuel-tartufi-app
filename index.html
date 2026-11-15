@@ -314,6 +314,7 @@ input[type=file]{display:none;}
   <div class="ntab active" onclick="goTab('scheda')" id="t-scheda"><i class="ti ti-file-description"></i>Scheda</div>
   <div class="ntab" onclick="goTab('social')" id="t-social"><i class="ti ti-brand-instagram"></i>Social</div>
   <div class="ntab" onclick="goTab('gestionale')" id="t-gestionale"><i class="ti ti-chart-bar"></i>Gestionale</div>
+  <div class="ntab" onclick="goTab('fornfatt')" id="t-fornfatt"><i class="ti ti-receipt"></i>Fatture</div>
   <div class="ntab" onclick="goTab('grafici')" id="t-grafici"><i class="ti ti-chart-pie"></i>Grafici</div>
   <div class="ntab" onclick="goTab('analisi')" id="t-analisi"><i class="ti ti-plant"></i>Analisi</div>
   <div class="ntab" onclick="goTab('documenti')" id="t-documenti"><i class="ti ti-files"></i>Documenti</div>
@@ -888,56 +889,12 @@ function doGet(e) {
   <!-- SEZIONE TABS FORNITORI / CREDITI -->
   <div class="card" style="margin-top:1rem;">
     <div class="g-section-tabs">
-      <div class="g-section-tab active" onclick="switchGSection('fornitori')">🏭 Fornitori</div>
-      <div class="g-section-tab" onclick="switchGSection('crediti')">💳 Crediti</div>
-      <div class="g-section-tab" onclick="switchGSection('spese')">🧾 Spese</div>
-      <div class="g-section-tab" onclick="switchGSection('fatture')">🧾 Fatture</div>
-    </div>
-
-    <!-- FORNITORI -->
-    <div class="g-section active" id="gs-fornitori">
-      <div class="card-title"><i class="ti ti-building-store"></i>Aggiungi fornitore</div>
-      <div class="form-row">
-        <div class="gfield"><label>Nome fornitore</label><input type="text" id="fn-nome" placeholder="Nome o azienda"/></div>
-        <div class="gfield"><label>Telefono</label><input type="text" id="fn-tel" placeholder="+39..."/></div>
-      </div>
-      <div class="form-row">
-        <div class="gfield"><label>Varietà fornita</label>
-          <select id="fn-varieta">
-            <option value="">Seleziona...</option>
-            <option>Tartufo Nero Estivo (Scorzone)</option>
-            <option>Tartufo Nero Pregiato</option>
-            <option>Tartufo Bianco Pregiato</option>
-            <option>Tartufo Uncinato</option>
-            <option>Misto</option>
-          </select>
-        </div>
-        <div class="gfield"><label>Zona</label><input type="text" id="fn-zona" placeholder="es. Umbria, Toscana..."/></div>
-      </div>
-      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin:.75rem 0 .5rem;">Fattura ricevuta</div>
-      <div class="form-row">
-        <div class="gfield"><label>Data</label><input type="date" id="fn-data"/></div>
-        <div class="gfield"><label>N° Fattura</label><input type="text" id="fn-nfatt" placeholder="es. 2026/001"/></div>
-      </div>
-      <div class="form-row">
-        <div class="gfield"><label>Kg acquistati</label><input type="number" id="fn-kg" placeholder="0.000" step="0.001" oninput="calcFornTotal()"/></div>
-        <div class="gfield"><label>Prezzo €/kg</label><input type="number" id="fn-prezzo" placeholder="0.00" step="0.01" oninput="calcFornTotal()"/></div>
-      </div>
-      <div class="form-row">
-        <div class="gfield"><label>Totale €</label><input type="number" id="fn-totale" placeholder="0.00" readonly/></div>
-        <div class="gfield"><label>Stato fattura</label>
-          <select id="fn-stato"><option value="aperta">🔴 Da pagare</option><option value="pagata">🟢 Pagata</option></select>
-        </div>
-      </div>
-      <button class="btn-gold" onclick="saveFornitura()"><i class="ti ti-device-floppy"></i>Salva fornitore + fattura</button>
-      <div class="section-hdr" style="margin-top:1.25rem;">
-        <span><i class="ti ti-list" style="font-size:14px;"></i>&nbsp;Fornitori</span>
-      </div>
-      <div id="forn-list"><div class="empty-g">Nessun fornitore registrato</div></div>
+      <div class="g-section-tab active" data-sec="crediti" onclick="switchGSection('crediti')">💳 Crediti</div>
+      <div class="g-section-tab" data-sec="spese" onclick="switchGSection('spese')">🧾 Spese</div>
     </div>
 
     <!-- CREDITI -->
-    <div class="g-section" id="gs-crediti">
+    <div class="g-section active" id="gs-crediti">
       <div class="card-title"><i class="ti ti-credit-card"></i>Nuovo credito</div>
       <div class="form-row">
         <div class="gfield"><label>Data consegna</label><input type="date" id="cr-data"/></div>
@@ -1012,6 +969,59 @@ function doGet(e) {
       </div>
     </div>
 
+  </div>
+
+</div>
+<!-- TAB FATTURE & FORNITORI -->
+<div class="tab" id="tab-fornfatt">
+  <div class="card">
+    <div class="g-section-tabs" id="ff-tabs">
+      <div class="g-section-tab active" data-sec="fornitori" onclick="switchFFSection('fornitori')">🏭 Fornitori</div>
+      <div class="g-section-tab" data-sec="fatture" onclick="switchFFSection('fatture')">🧾 Fatture</div>
+    </div>
+
+    <!-- FORNITORI -->
+    <div class="g-section active" id="gs-fornitori">
+      <div class="card-title"><i class="ti ti-building-store"></i>Aggiungi fornitore</div>
+      <div class="form-row">
+        <div class="gfield"><label>Nome fornitore</label><input type="text" id="fn-nome" placeholder="Nome o azienda"/></div>
+        <div class="gfield"><label>Telefono</label><input type="text" id="fn-tel" placeholder="+39..."/></div>
+      </div>
+      <div class="form-row">
+        <div class="gfield"><label>Varietà fornita</label>
+          <select id="fn-varieta">
+            <option value="">Seleziona...</option>
+            <option>Tartufo Nero Estivo (Scorzone)</option>
+            <option>Tartufo Nero Pregiato</option>
+            <option>Tartufo Bianco Pregiato</option>
+            <option>Tartufo Uncinato</option>
+            <option>Misto</option>
+          </select>
+        </div>
+        <div class="gfield"><label>Zona</label><input type="text" id="fn-zona" placeholder="es. Umbria, Toscana..."/></div>
+      </div>
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin:.75rem 0 .5rem;">Fattura ricevuta</div>
+      <div class="form-row">
+        <div class="gfield"><label>Data</label><input type="date" id="fn-data"/></div>
+        <div class="gfield"><label>N° Fattura</label><input type="text" id="fn-nfatt" placeholder="es. 2026/001"/></div>
+      </div>
+      <div class="form-row">
+        <div class="gfield"><label>Kg acquistati</label><input type="number" id="fn-kg" placeholder="0.000" step="0.001" oninput="calcFornTotal()"/></div>
+        <div class="gfield"><label>Prezzo €/kg</label><input type="number" id="fn-prezzo" placeholder="0.00" step="0.01" oninput="calcFornTotal()"/></div>
+      </div>
+      <div class="form-row">
+        <div class="gfield"><label>Totale €</label><input type="number" id="fn-totale" placeholder="0.00" readonly/></div>
+        <div class="gfield"><label>Stato fattura</label>
+          <select id="fn-stato"><option value="aperta">🔴 Da pagare</option><option value="pagata">🟢 Pagata</option></select>
+        </div>
+      </div>
+      <button class="btn-gold" onclick="saveFornitura()"><i class="ti ti-device-floppy"></i>Salva fornitore + fattura</button>
+      <div class="section-hdr" style="margin-top:1.25rem;">
+        <span><i class="ti ti-list" style="font-size:14px;"></i>&nbsp;Fornitori</span>
+      </div>
+      <div id="forn-list"><div class="empty-g">Nessun fornitore registrato</div></div>
+    </div>
+
     <!-- FATTURE -->
     <div class="g-section" id="gs-fatture">
       <div class="card-title"><i class="ti ti-file-invoice"></i>Nuova vendita</div>
@@ -1057,7 +1067,6 @@ function doGet(e) {
       <div id="fatture-list"><div class="empty-g">Nessuna vendita registrata</div></div>
     </div>
   </div>
-
 </div>
 <!-- TAB GRAFICI -->
 <div class="tab" id="tab-grafici">
@@ -1245,6 +1254,7 @@ function goTab(n){
   const navEl = document.getElementById('t-'+n);
   if(navEl){ navEl.classList.add('active'); navEl.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}); }
   document.getElementById('tab-'+n).classList.add('active');
+  if(n==='fornfatt'){ if(typeof renderFornitori==='function') renderFornitori(); if(typeof renderFatture==='function') renderFatture(); }
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -3586,19 +3596,20 @@ function exportSpeseCSV() {
   a.download='manueltartufi_spese.csv';a.click();
 }
 
-// Aggiorna switchGSection per includere spese
-const _origSwitchGSection = switchGSection;
-window.switchGSection = function(section) {
-  document.querySelectorAll('.g-section-tab').forEach((el,i) => {
-    el.classList.toggle('active', ['fornitori','crediti','spese'][i] === section);
-  });
-  document.querySelectorAll('.g-section').forEach(el => el.classList.remove('active'));
+// Sezioni del Gestionale (Crediti / Spese) e della scheda Fatture (Fornitori / Fatture)
+function _switchSezioni(rootId, section){
+  const root = document.getElementById(rootId);
+  root.querySelectorAll('.g-section-tab').forEach(el => el.classList.toggle('active', el.dataset.sec === section));
+  root.querySelectorAll('.g-section').forEach(el => el.classList.remove('active'));
   const sec = document.getElementById('gs-'+section);
   if (sec) sec.classList.add('active');
   if (section === 'fornitori') renderFornitori();
   if (section === 'crediti') renderCrediti();
   if (section === 'spese') renderSpese();
-};
+  if (section === 'fatture') renderFatture();
+}
+window.switchGSection = function(section){ _switchSezioni('tab-gestionale', section); };
+window.switchFFSection = function(section){ _switchSezioni('tab-fornfatt', section); };
 
 // Init spese data
 window.addEventListener('load', () => {

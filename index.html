@@ -314,7 +314,7 @@ input[type=file]{display:none;}
   <div class="ntab active" onclick="goTab('scheda')" id="t-scheda"><i class="ti ti-file-description"></i>Scheda</div>
   <div class="ntab" onclick="goTab('social')" id="t-social"><i class="ti ti-brand-instagram"></i>Social</div>
   <div class="ntab" onclick="goTab('gestionale')" id="t-gestionale"><i class="ti ti-chart-bar"></i>Gestionale</div>
-  <div class="ntab" onclick="goTab('fornfatt')" id="t-fornfatt"><i class="ti ti-receipt"></i>Fatture e Fornitori</div>
+  <div class="ntab" onclick="goTab('fornfatt')" id="t-fornfatt"><i class="ti ti-folders"></i>Fornitori</div>
   <div class="ntab" onclick="goTab('grafici')" id="t-grafici"><i class="ti ti-chart-pie"></i>Grafici</div>
   <div class="ntab" onclick="goTab('analisi')" id="t-analisi"><i class="ti ti-plant"></i>Analisi</div>
   <div class="ntab" onclick="goTab('documenti')" id="t-documenti"><i class="ti ti-files"></i>Documenti</div>
@@ -972,100 +972,20 @@ function doGet(e) {
   </div>
 
 </div>
-<!-- TAB FATTURE & FORNITORI -->
+<!-- TAB FORNITORI (cartelle) -->
 <div class="tab" id="tab-fornfatt">
   <div class="card">
-    <div class="g-section-tabs" id="ff-tabs">
-      <div class="g-section-tab active" data-sec="fornitori" onclick="switchFFSection('fornitori')">🏭 Fornitori</div>
-      <div class="g-section-tab" data-sec="fatture" onclick="switchFFSection('fatture')">🧾 Fatture</div>
+    <div class="card-title"><i class="ti ti-folder"></i>Fornitori</div>
+    <div class="form-row">
+      <div class="gfield" style="grid-column:1/-1;"><label>Nuova cartella</label>
+        <input type="text" id="fn-nome" placeholder="Nome fornitore" onkeydown="if(event.key==='Enter')creaCartella()"/>
+      </div>
     </div>
-
-    <!-- FORNITORI -->
-    <div class="g-section active" id="gs-fornitori">
-      <div class="card-title"><i class="ti ti-building-store"></i>Aggiungi fornitore</div>
-      <div class="form-row">
-        <div class="gfield"><label>Nome fornitore</label><input type="text" id="fn-nome" placeholder="Nome o azienda"/></div>
-        <div class="gfield"><label>Telefono</label><input type="text" id="fn-tel" placeholder="+39..."/></div>
-      </div>
-      <div class="form-row">
-        <div class="gfield"><label>Varietà fornita</label>
-          <select id="fn-varieta">
-            <option value="">Seleziona...</option>
-            <option>Tartufo Nero Estivo (Scorzone)</option>
-            <option>Tartufo Nero Pregiato</option>
-            <option>Tartufo Bianco Pregiato</option>
-            <option>Tartufo Uncinato</option>
-            <option>Misto</option>
-          </select>
-        </div>
-        <div class="gfield"><label>Zona</label><input type="text" id="fn-zona" placeholder="es. Umbria, Toscana..."/></div>
-      </div>
-      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin:.75rem 0 .5rem;">Fattura ricevuta</div>
-      <div class="form-row">
-        <div class="gfield"><label>Data</label><input type="date" id="fn-data"/></div>
-        <div class="gfield"><label>N° Fattura</label><input type="text" id="fn-nfatt" placeholder="es. 2026/001"/></div>
-      </div>
-      <div class="form-row">
-        <div class="gfield"><label>Kg acquistati</label><input type="number" id="fn-kg" placeholder="0.000" step="0.001" oninput="calcFornTotal()"/></div>
-        <div class="gfield"><label>Prezzo €/kg</label><input type="number" id="fn-prezzo" placeholder="0.00" step="0.01" oninput="calcFornTotal()"/></div>
-      </div>
-      <div class="form-row">
-        <div class="gfield"><label>Totale €</label><input type="number" id="fn-totale" placeholder="0.00" readonly/></div>
-        <div class="gfield"><label>Stato fattura</label>
-          <select id="fn-stato"><option value="aperta">🔴 Da pagare</option><option value="pagata">🟢 Pagata</option></select>
-        </div>
-      </div>
-      <button class="btn-gold" onclick="saveFornitura()"><i class="ti ti-device-floppy"></i>Salva fornitore + fattura</button>
-      <div class="section-hdr" style="margin-top:1.25rem;">
-        <span><i class="ti ti-list" style="font-size:14px;"></i>&nbsp;Fornitori</span>
-      </div>
-      <div id="forn-list"><div class="empty-g">Nessun fornitore registrato</div></div>
+    <button class="btn-gold" onclick="creaCartella()"><i class="ti ti-folder-plus"></i>Crea cartella</button>
+    <div class="section-hdr" style="margin-top:1.25rem;">
+      <span><i class="ti ti-folders" style="font-size:14px;"></i>&nbsp;Cartelle</span>
     </div>
-
-    <!-- FATTURE -->
-    <div class="g-section" id="gs-fatture">
-      <div class="card-title"><i class="ti ti-file-invoice"></i>Nuova vendita</div>
-      <div class="form-row">
-        <div class="gfield"><label>Data</label><input type="date" id="ft-data"/></div>
-        <div class="gfield"><label>Cliente</label><input type="text" id="ft-cliente" placeholder="Nome cliente"/></div>
-      </div>
-      <div class="form-row">
-        <div class="gfield"><label>Prodotto / Tipo</label>
-          <select id="ft-tipo">
-            <option value="">Seleziona...</option>
-            <option value="Tartufo Fresco">🍄 Tartufo Fresco</option>
-            <option value="Prodotto Lavorato">🫙 Prodotto Lavorato</option>
-          </select>
-        </div>
-        <div class="gfield"><label>Peso (kg)</label><input type="number" id="ft-peso" placeholder="0.000" step="0.001" oninput="calcFattTotale()"/></div>
-      </div>
-      <div class="form-row">
-        <div class="gfield"><label>Prezzo €/kg</label><input type="number" id="ft-prezzo" placeholder="0.00" step="0.01" oninput="calcFattTotale()"/></div>
-        <div class="gfield"><label>Totale €</label><input type="number" id="ft-totale" placeholder="0.00" readonly style="background:#f9f9f9;"/></div>
-      </div>
-      <div class="form-row">
-        <div class="gfield" style="grid-column:1/-1;">
-          <label>Stato fattura</label>
-          <select id="ft-stato">
-            <option value="da_fare">🔴 Fattura da fare</option>
-            <option value="emessa">✅ Fattura emessa</option>
-          </select>
-        </div>
-      </div>
-      <button class="btn-gold" onclick="saveFattura()"><i class="ti ti-device-floppy"></i>Registra vendita</button>
-
-      <!-- Lista fatture da fare -->
-      <div class="section-hdr" style="margin-top:1.25rem;">
-        <span><i class="ti ti-alert-circle" style="font-size:14px;color:#c0392b;"></i>&nbsp;<span style="color:#c0392b;">Fatture da emettere</span></span>
-      </div>
-      <div id="fatture-dafare-list"><div class="empty-g">Nessuna fattura in sospeso 🎉</div></div>
-
-      <!-- Lista tutte -->
-      <div class="section-hdr" style="margin-top:1rem;">
-        <span><i class="ti ti-list" style="font-size:14px;"></i>&nbsp;Tutte le vendite</span>
-      </div>
-      <div id="fatture-list"><div class="empty-g">Nessuna vendita registrata</div></div>
-    </div>
+    <div id="forn-list"><div class="empty-g">Nessuna cartella</div></div>
   </div>
 </div>
 <!-- TAB GRAFICI -->
@@ -1254,7 +1174,7 @@ function goTab(n){
   const navEl = document.getElementById('t-'+n);
   if(navEl){ navEl.classList.add('active'); navEl.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}); }
   document.getElementById('tab-'+n).classList.add('active');
-  if(n==='fornfatt'){ if(typeof renderFornitori==='function') renderFornitori(); if(typeof renderFatture==='function') renderFatture(); }
+  if(n==='fornfatt'){ renderFornitori(); }
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -3211,62 +3131,26 @@ function switchGSection(section) {
   if (section === 'fatture') renderFatture();
 }
 
-function calcFornTotal() {
-  const kg = parseFloat(document.getElementById('fn-kg').value)||0;
-  const p = parseFloat(document.getElementById('fn-prezzo').value)||0;
-  document.getElementById('fn-totale').value = (kg*p).toFixed(2);
-}
-
-function saveFornitura() {
-  const nome = document.getElementById('fn-nome').value.trim();
-  const totale = parseFloat(document.getElementById('fn-totale').value)||0;
-  if (!nome) { alert('Inserisci il nome del fornitore'); return; }
-
-  // Cerca fornitore esistente o crea nuovo
+let gFornAperto = null;
+function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function creaCartella() {
+  const inp = document.getElementById('fn-nome');
+  const nome = inp.value.trim();
+  if (!nome) { alert('Scrivi il nome del fornitore'); return; }
   let forn = gFornitori.find(f => f.nome.toLowerCase() === nome.toLowerCase());
   if (!forn) {
-    forn = {
-      id: Date.now(),
-      nome,
-      tel: document.getElementById('fn-tel').value.trim(),
-      varieta: document.getElementById('fn-varieta').value,
-      zona: document.getElementById('fn-zona').value.trim(),
-      fatture: []
-    };
+    forn = { id: Date.now(), nome, tel: '', varieta: '', zona: '', fatture: [] };
     gFornitori.push(forn);
+    localStorage.setItem('mt_fornitori', JSON.stringify(gFornitori));
+    scriptWrite('append_forn', { row: [forn.id, forn.nome, '', '', '', '', '', '', '', ''] });
   }
-
-  // Aggiungi fattura se c'è importo
-  if (totale > 0) {
-    forn.fatture.push({
-      id: Date.now()+1,
-      data: document.getElementById('fn-data').value,
-      nfatt: document.getElementById('fn-nfatt').value.trim(),
-      kg: document.getElementById('fn-kg').value,
-      prezzo: document.getElementById('fn-prezzo').value,
-      totale,
-      stato: document.getElementById('fn-stato').value
-    });
-  }
-
-  localStorage.setItem('mt_fornitori', JSON.stringify(gFornitori));
-  
-  // Salva su Sheets
-  scriptWrite('append_forn', { row: [forn.id, forn.nome, forn.tel, forn.varieta, forn.zona, 
-    totale > 0 ? document.getElementById('fn-data').value : '',
-    totale > 0 ? document.getElementById('fn-nfatt').value : '',
-    totale > 0 ? document.getElementById('fn-kg').value : '',
-    totale > 0 ? totale.toFixed(2) : '',
-    totale > 0 ? document.getElementById('fn-stato').value : ''] });
-
-  // Reset form
-  ['fn-nome','fn-tel','fn-zona','fn-nfatt','fn-kg','fn-prezzo','fn-totale'].forEach(id => document.getElementById(id).value='');
-  document.getElementById('fn-varieta').selectedIndex=0;
-  document.getElementById('fn-stato').selectedIndex=0;
+  gFornAperto = forn.id;
+  inp.value = '';
   renderFornitori();
-
-  const btn = document.activeElement;
-  if(btn&&btn.tagName==='BUTTON'){const o=btn.innerHTML;btn.innerHTML='<i class="ti ti-check"></i> Salvato!';btn.disabled=true;setTimeout(()=>{btn.innerHTML=o;btn.disabled=false;},1800);}
+}
+function fornApri(id) {
+  gFornAperto = (gFornAperto === id) ? null : id;
+  renderFornitori();
 }
 
 function toggleFatturaStato(fornId, fattId) {
@@ -3368,56 +3252,56 @@ async function fotoTogglePagata(id, fornId){
   fornCaricaFoto();
 }
 async function fornCaricaFoto(){
-  const grids = document.querySelectorAll('.forn-foto-grid');
-  for(const g of grids){
-    const fornId = Number(g.dataset.forn);
+  for(const f of gFornitori){
     try {
-      const list = await fotoLista(fornId);
-      g.innerHTML = list.map(f => {
-        const u = URL.createObjectURL(f.blob);
-        return `<div class="forn-foto-th" onclick="fotoApri('${f.id}',${fornId})"><img src="${u}"/><div class="forn-foto-st ${f.pagata?'si':'no'}" onclick="event.stopPropagation();fotoTogglePagata('${f.id}',${fornId})" title="Tocca per cambiare: rosso = da pagare, verde = pagata"></div><span>${f.data||''}</span></div>`;
-      }).join('');
-      const nonPag = list.filter(f => !f.pagata).length;
-      const cnt = document.getElementById('foto-cnt-'+fornId);
-      if(cnt) cnt.textContent = nonPag ? ('🔴 '+nonPag+(nonPag===1?' fattura da pagare':' fatture da pagare')) : (list.length ? '🟢 Tutte pagate' : '');
-      if(cnt) cnt.style.color = nonPag ? '#E74C3C' : '#27AE60';
-    } catch(e){ g.innerHTML = ''; }
+      const list = await fotoLista(f.id);
+      const nonPag = list.filter(x => !x.pagata).length;
+      const cnt = document.getElementById('foto-cnt-'+f.id);
+      if(cnt){
+        cnt.textContent = !list.length ? 'Nessuna foto' : (nonPag ? ('🔴 '+nonPag+(nonPag===1?' da pagare':' da pagare')+' · '+list.length+(list.length===1?' foto':' foto')) : ('🟢 Tutte pagate · '+list.length+' foto'));
+        cnt.style.color = !list.length ? 'var(--text3)' : (nonPag ? '#E74C3C' : '#27AE60');
+      }
+      const g = document.querySelector('.forn-foto-grid[data-forn="'+f.id+'"]');
+      if(g){
+        g.innerHTML = list.map(x => {
+          const u = URL.createObjectURL(x.blob);
+          return `<div class="forn-foto-th" onclick="fotoApri('${x.id}',${f.id})"><img src="${u}"/><div class="forn-foto-st ${x.pagata?'si':'no'}" onclick="event.stopPropagation();fotoTogglePagata('${x.id}',${f.id})" title="Tocca per cambiare: rosso = da pagare, verde = pagata"></div><span>${x.data||''}</span></div>`;
+        }).join('');
+      }
+    } catch(e){}
   }
 }
 
 function renderFornitori() {
   const el = document.getElementById('forn-list');
-  if (!gFornitori.length) { el.innerHTML = '<div class="empty-g">Nessun fornitore registrato</div>'; return; }
-  el.innerHTML = gFornitori.map(f => {
-    const totApert = f.fatture.filter(x=>x.stato==='aperta').reduce((a,x)=>a+x.totale,0);
-    const totPag = f.fatture.filter(x=>x.stato==='pagata').reduce((a,x)=>a+x.totale,0);
-    const fatture = f.fatture.map(x => `
+  if (!gFornitori.length) { el.innerHTML = '<div class="empty-g">Nessuna cartella. Creane una con il nome del fornitore.</div>'; return; }
+  const ord = [...gFornitori].sort((a,b) => a.nome.localeCompare(b.nome, 'it'));
+  el.innerHTML = ord.map(f => {
+    const aperto = gFornAperto === f.id;
+    const vecchie = (f.fatture || []).map(x => `
       <div class="fatt-item">
-        <div class="fatt-dot ${x.stato}" onclick="toggleFatturaStato(${f.id},${x.id})" style="cursor:pointer;" title="Clicca per cambiare stato"></div>
-        <div class="fatt-info">${x.data||'—'} · ${x.nfatt||'—'} · ${x.kg||'—'}kg</div>
+        <div class="fatt-dot ${x.stato}" onclick="toggleFatturaStato(${f.id},${x.id})" style="cursor:pointer;" title="Tocca per cambiare stato"></div>
+        <div class="fatt-info">${esc(x.data)||'—'} · ${esc(x.nfatt)||'—'} · ${esc(x.kg)||'—'}kg</div>
         <div class="fatt-amt">€${parseFloat(x.totale).toFixed(2)}</div>
       </div>`).join('');
     return `<div class="forn-item">
-      <div class="forn-header">
+      <div class="forn-header" style="cursor:pointer;" onclick="fornApri(${f.id})">
         <div>
-          <div class="forn-nome">${f.nome}${f.zona?' <span style="font-size:10px;color:var(--text3);">· '+f.zona+'</span>':''}</div>
-          <div class="forn-varieta">${f.varieta||''} ${f.tel?'· '+f.tel:''}</div>
+          <div class="forn-nome">📁 ${esc(f.nome)}</div>
+          <div class="forn-foto-cnt" id="foto-cnt-${f.id}"></div>
         </div>
-        <button class="mov-del" onclick="deleteForn(${f.id})" title="Elimina">×</button>
+        <div style="font-size:18px;color:var(--text3);">${aperto ? '▾' : '▸'}</div>
       </div>
-      <div class="forn-foto-bar">
-        <label class="forn-foto-btn"><i class="ti ti-camera"></i>&nbsp;Foto fattura
-          <input type="file" accept="image/*" capture="environment" multiple style="display:none;" onchange="fotoAggiungi(${f.id}, this)"/>
-        </label>
-      </div>
-      <div class="forn-foto-cnt" id="foto-cnt-${f.id}"></div>
-      <div class="forn-foto-grid" data-forn="${f.id}"></div>
-      ${f.fatture.length ? `
-      <div style="display:flex;gap:12px;font-size:11px;margin-top:.5rem;">
-        <span style="color:#E74C3C;">🔴 Da pagare: €${totApert.toFixed(2)}</span>
-        <span style="color:#27AE60;">🟢 Pagate: €${totPag.toFixed(2)}</span>
-      </div>
-      <div class="forn-fatture">${fatture}</div>` : '<div style="font-size:11px;color:var(--text3);margin-top:.4rem;">Nessuna fattura</div>'}
+      ${aperto ? `<div class="forn-body">
+        <div class="forn-foto-bar">
+          <label class="forn-foto-btn"><i class="ti ti-camera"></i>&nbsp;Foto fattura
+            <input type="file" accept="image/*" capture="environment" multiple style="display:none;" onchange="fotoAggiungi(${f.id}, this)"/>
+          </label>
+          <button class="mov-del" onclick="deleteForn(${f.id})" title="Elimina cartella">×</button>
+        </div>
+        <div class="forn-foto-grid" data-forn="${f.id}"></div>
+        ${vecchie ? `<div class="forn-fatture" style="margin-top:.6rem;">${vecchie}</div>` : ''}
+      </div>` : ''}
     </div>`;
   }).join('');
   fornCaricaFoto();
@@ -3606,10 +3490,8 @@ function _switchSezioni(rootId, section){
   if (section === 'fornitori') renderFornitori();
   if (section === 'crediti') renderCrediti();
   if (section === 'spese') renderSpese();
-  if (section === 'fatture') renderFatture();
 }
 window.switchGSection = function(section){ _switchSezioni('tab-gestionale', section); };
-window.switchFFSection = function(section){ _switchSezioni('tab-fornfatt', section); };
 
 // Init spese data
 window.addEventListener('load', () => {

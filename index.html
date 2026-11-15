@@ -250,6 +250,10 @@ input[type=file]{display:none;}
 .forn-foto-th{position:relative;width:72px;height:72px;border-radius:6px;overflow:hidden;border:1px solid #e5e0d5;cursor:pointer;background:#f5f2ea;}
 .forn-foto-th img{width:100%;height:100%;object-fit:cover;display:block;}
 .forn-foto-th span{position:absolute;left:0;right:0;bottom:0;background:rgba(26,24,20,.65);color:#fff;font-size:9px;text-align:center;padding:2px 0;}
+.forn-foto-st{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25);font-size:0;}
+.forn-foto-st.no{background:#E74C3C;}
+.forn-foto-st.si{background:#27AE60;}
+.forn-foto-cnt{font-size:11px;color:#E74C3C;margin-top:.4rem;}
 #foto-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:99999;display:none;flex-direction:column;align-items:center;justify-content:center;}
 #foto-lightbox img{max-width:96vw;max-height:80vh;object-fit:contain;}
 #foto-lightbox .lb-bar{display:flex;gap:12px;margin-top:14px;}
@@ -3345,6 +3349,14 @@ async function fotoLbElimina(){
   if(!_lbId || !confirm('Eliminare questa foto?')) return;
   await fotoElimina(_lbId); fotoLbChiudi(); fornCaricaFoto();
 }
+async function fotoTogglePagata(id, fornId){
+  const db = await fotoDbOpen();
+  const list = await fotoLista(fornId);
+  const f = list.find(x => x.id === id); if(!f) return;
+  f.pagata = !f.pagata;
+  await new Promise((r, j) => { const tx = db.transaction('foto','readwrite'); tx.objectStore('foto').put(f); tx.oncomplete = r; tx.onerror = () => j(tx.error); });
+  fornCaricaFoto();
+}
 async function fornCaricaFoto(){
   const grids = document.querySelectorAll('.forn-foto-grid');
   for(const g of grids){
@@ -3353,8 +3365,12 @@ async function fornCaricaFoto(){
       const list = await fotoLista(fornId);
       g.innerHTML = list.map(f => {
         const u = URL.createObjectURL(f.blob);
-        return `<div class="forn-foto-th" onclick="fotoApri('${f.id}',${fornId})"><img src="${u}"/><span>${f.data||''}</span></div>`;
+        return `<div class="forn-foto-th" onclick="fotoApri('${f.id}',${fornId})"><img src="${u}"/><div class="forn-foto-st ${f.pagata?'si':'no'}" onclick="event.stopPropagation();fotoTogglePagata('${f.id}',${fornId})" title="Tocca per cambiare: rosso = da pagare, verde = pagata"></div><span>${f.data||''}</span></div>`;
       }).join('');
+      const nonPag = list.filter(f => !f.pagata).length;
+      const cnt = document.getElementById('foto-cnt-'+fornId);
+      if(cnt) cnt.textContent = nonPag ? ('🔴 '+nonPag+(nonPag===1?' fattura da pagare':' fatture da pagare')) : (list.length ? '🟢 Tutte pagate' : '');
+      if(cnt) cnt.style.color = nonPag ? '#E74C3C' : '#27AE60';
     } catch(e){ g.innerHTML = ''; }
   }
 }
@@ -3384,6 +3400,7 @@ function renderFornitori() {
           <input type="file" accept="image/*" capture="environment" multiple style="display:none;" onchange="fotoAggiungi(${f.id}, this)"/>
         </label>
       </div>
+      <div class="forn-foto-cnt" id="foto-cnt-${f.id}"></div>
       <div class="forn-foto-grid" data-forn="${f.id}"></div>
       ${f.fatture.length ? `
       <div style="display:flex;gap:12px;font-size:11px;margin-top:.5rem;">

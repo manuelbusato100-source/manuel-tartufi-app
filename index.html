@@ -672,8 +672,7 @@ function doGet(e) {
   <div class="card">
     <div class="card-title"><i class="ti ti-plus"></i>Registra movimento</div>
     <div class="tab-mini" id="gTabMini">
-      <div class="active" onclick="switchGTab('vendita')">Vendita Fresco</div>
-      <div onclick="switchGTab('lavorato')">Vendita Lavorato</div>
+      <div class="active" onclick="switchGTab('vendita')">Vendita</div>
       <div onclick="switchGTab('funghi')">Vendita Funghi</div>
       <div onclick="switchGTab('acquisto')">Acquisto</div>
     </div>
@@ -685,6 +684,7 @@ function doGet(e) {
         <div class="gfield"><label>Cliente</label><input type="text" id="gv-cliente" placeholder="Nome cliente"/></div>
       </div>
 
+      <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:.9rem 0 .5rem;font-weight:500;">🍄 Tartufo fresco</div>
       <div id="gv-righe-wrap">
         <div class="ga-riga" data-riga="0">
           <div class="form-row">
@@ -707,25 +707,7 @@ function doGet(e) {
 
       <button type="button" class="btn-outline-gold" onclick="addRigaVendita()" style="width:100%;margin-top:.6rem;"><i class="ti ti-plus"></i>&nbsp;Aggiungi un altro prodotto</button>
 
-      <div class="form-row" style="margin-top:.75rem;">
-        <div class="gfield"><label>Totale netto €</label><input type="number" id="gv-totale" placeholder="0.00" step="0.01" readonly/></div>
-        <div class="gfield"><label>Fatturato?</label>
-          <select id="gv-fatt"><option value="SI">SI</option><option value="NO">NO</option></select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="gfield" style="grid-column:1/-1;"><label>N° Fattura</label><input type="text" id="gv-nfatt" placeholder="opzionale"/></div>
-      </div>
-      <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('vendita', this)"><i class="ti ti-device-floppy"></i>Registra vendita</button>
-    </div>
-
-    <!-- VENDITA LAVORATO -->
-    <div class="gform-panel" id="gp-lavorato">
-      <div class="form-row">
-        <div class="gfield"><label>Data</label><input type="date" id="gl-data"/></div>
-        <div class="gfield"><label>Cliente</label><input type="text" id="gl-cliente" placeholder="Nome cliente"/></div>
-      </div>
-
+      <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:.9rem 0 .5rem;font-weight:500;">🫙 Prodotti lavorati</div>
       <div id="gl-righe-wrap">
         <div class="ga-riga" data-riga="0">
           <div class="form-row">
@@ -768,15 +750,15 @@ function doGet(e) {
       <button type="button" class="btn-outline-gold" onclick="addRigaLavorato()" style="width:100%;margin-top:.6rem;"><i class="ti ti-plus"></i>&nbsp;Aggiungi un altro prodotto</button>
 
       <div class="form-row" style="margin-top:.75rem;">
-        <div class="gfield"><label>Totale netto €</label><input type="number" id="gl-totale" placeholder="0.00" step="0.01" readonly/></div>
+        <div class="gfield"><label>Totale netto €</label><input type="number" id="gv-totale" placeholder="0.00" step="0.01" readonly/></div>
         <div class="gfield"><label>Fatturato?</label>
-          <select id="gl-fatt"><option value="SI">SI</option><option value="NO">NO</option></select>
+          <select id="gv-fatt"><option value="SI">SI</option><option value="NO">NO</option></select>
         </div>
       </div>
       <div class="form-row">
-        <div class="gfield" style="grid-column:1/-1;"><label>N° Fattura</label><input type="text" id="gl-nfatt" placeholder="opzionale"/></div>
+        <div class="gfield" style="grid-column:1/-1;"><label>N° Fattura</label><input type="text" id="gv-nfatt" placeholder="opzionale"/></div>
       </div>
-      <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('lavorato', this)"><i class="ti ti-device-floppy"></i>Registra vendita</button>
+      <button class="btn-gold" style="margin-top:.5rem;" onclick="saveMovimento('vendita', this)"><i class="ti ti-device-floppy"></i>Registra vendita</button>
     </div>
 
     <!-- VENDITA FUNGHI -->
@@ -1471,7 +1453,7 @@ async function pullFromSheets() {
 
 function switchGTab(tab){
   gTabNow = tab;
-  const labels = ['vendita','lavorato','funghi','acquisto'];
+  const labels = ['vendita','funghi','acquisto'];
   document.getElementById('gTabMini').querySelectorAll('div').forEach((el,i) => {
     el.classList.toggle('active', labels[i] === tab);
   });
@@ -1482,7 +1464,7 @@ function switchGTab(tab){
 function setToday(){
   const _n = new Date();
   const t = _n.getFullYear()+'-'+String(_n.getMonth()+1).padStart(2,'0')+'-'+String(_n.getDate()).padStart(2,'0');
-  ['gv-data','gl-data','gf-data','ga-data'].forEach(id => {
+  ['gv-data','gf-data','ga-data'].forEach(id => {
     const el = document.getElementById(id);
     if(el && !el.value) el.value = t;
   });
@@ -1504,17 +1486,14 @@ function calcVTotal(){
     const p  = parseFloat(r.querySelector('.gv-r-prezzo').value) || 0;
     tot += kg * p;
   });
-  document.getElementById('gv-totale').value = tot.toFixed(2);
-}
-function calcLTotal(){
-  let tot = 0;
   document.querySelectorAll('#gl-righe-wrap .ga-riga').forEach(r => {
     const q = parseFloat(r.querySelector('.gl-r-qty').value) || 0;
     const p = parseFloat(r.querySelector('.gl-r-prezzo').value) || 0;
     tot += q * p;
   });
-  document.getElementById('gl-totale').value = tot.toFixed(2);
+  document.getElementById('gv-totale').value = tot.toFixed(2);
 }
+function calcLTotal(){ calcVTotal(); }  // totale unico fresco + lavorati
 function calcATotal(){
   let tot = 0;
   document.querySelectorAll('#ga-righe-wrap .ga-riga').forEach(r => {
@@ -1709,31 +1688,51 @@ function saveMovimento(tipo, btnEl){
   setToday();
   let mov = null;
 
+  const movs = [];
   if(tipo === 'vendita'){
-    const righe = [];
+    // Una sola vendita: puo' contenere tartufo fresco E/O prodotti lavorati.
+    // Si registrano come due movimenti separati (stessi cliente/data/fattura) per tenere
+    // corretti grafici e analisi, che distinguono fresco e lavorato.
+    const righeF = [];
     document.querySelectorAll('#gv-righe-wrap .ga-riga').forEach(r => {
       const varieta = r.querySelector('.gv-r-varieta').value;
       const kg = parseFloat(r.querySelector('.gv-r-kg').value) || 0;
       const prezzo = parseFloat(r.querySelector('.gv-r-prezzo').value) || 0;
       if(varieta && kg > 0){
-        righe.push({ varieta, kg, prezzo, totale: +(kg*prezzo).toFixed(2) });
+        righeF.push({ varieta, kg, prezzo, totale: +(kg*prezzo).toFixed(2) });
       }
     });
-    if(righe.length === 0){ alert('Aggiungi almeno un prodotto con varietà e kg'); return; }
-    const totale = righe.reduce((a,r) => a+r.totale, 0);
-    const nome = righe.length === 1 ? righe[0].varieta : righe.map(r=>r.varieta).join(', ');
-    mov = {
-      id: 'm'+Date.now()+Math.floor(Math.random()*1000), tipo: 'vendita',
-      data: document.getElementById('gv-data').value,
-      nome,
-      totale,
-      fatturato: document.getElementById('gv-fatt').value,
-      extra: {
-        cliente: document.getElementById('gv-cliente').value.trim(),
-        nfatt: document.getElementById('gv-nfatt').value.trim(),
-        righe
+    const righeL = [];
+    document.querySelectorAll('#gl-righe-wrap .ga-riga').forEach(r => {
+      const prodotto = r.querySelector('.gl-r-prodotto').value;
+      const formato = r.querySelector('.gl-r-formato').value;
+      const qty = parseFloat(r.querySelector('.gl-r-qty').value) || 0;
+      const prezzo = parseFloat(r.querySelector('.gl-r-prezzo').value) || 0;
+      if(prodotto && qty > 0){
+        righeL.push({ nome: prodotto, formato, qty, prezzo, totale: +(qty*prezzo).toFixed(2) });
       }
-    };
+    });
+    if(righeF.length === 0 && righeL.length === 0){ alert('Aggiungi almeno un prodotto (fresco o lavorato) con quantità e prezzo'); return; }
+    const data = document.getElementById('gv-data').value;
+    const fatturato = document.getElementById('gv-fatt').value;
+    const cliente = document.getElementById('gv-cliente').value.trim();
+    const nfatt = document.getElementById('gv-nfatt').value.trim();
+    if(righeF.length){
+      movs.push({
+        id: 'm'+Date.now()+Math.floor(Math.random()*1000), tipo: 'vendita', data,
+        nome: righeF.length === 1 ? righeF[0].varieta : righeF.map(r=>r.varieta).join(', '),
+        totale: righeF.reduce((a,r) => a+r.totale, 0), fatturato,
+        extra: { cliente, nfatt, righe: righeF }
+      });
+    }
+    if(righeL.length){
+      movs.push({
+        id: 'm'+Date.now()+Math.floor(Math.random()*1000)+'l', tipo: 'lavorato', data,
+        nome: righeL.length === 1 ? righeL[0].nome : righeL.map(r=>r.nome).join(', '),
+        totale: righeL.reduce((a,r) => a+r.totale, 0), fatturato,
+        extra: { cliente, nfatt, righe: righeL }
+      });
+    }
     document.getElementById('gv-cliente').value = '';
     document.getElementById('gv-nfatt').value = '';
     document.getElementById('gv-totale').value = '';
@@ -1746,37 +1745,6 @@ function saveMovimento(tipo, btnEl){
       }
     });
     gvRigaCount = 1;
-  }
-
-  else if(tipo === 'lavorato'){
-    const righe = [];
-    document.querySelectorAll('#gl-righe-wrap .ga-riga').forEach(r => {
-      const prodotto = r.querySelector('.gl-r-prodotto').value;
-      const formato = r.querySelector('.gl-r-formato').value;
-      const qty = parseFloat(r.querySelector('.gl-r-qty').value) || 0;
-      const prezzo = parseFloat(r.querySelector('.gl-r-prezzo').value) || 0;
-      if(prodotto && qty > 0){
-        righe.push({ nome: prodotto, formato, qty, prezzo, totale: +(qty*prezzo).toFixed(2) });
-      }
-    });
-    if(righe.length === 0){ alert('Aggiungi almeno un prodotto con quantità e prezzo'); return; }
-    const totale = righe.reduce((a,r) => a+r.totale, 0);
-    const nome = righe.length === 1 ? righe[0].nome : righe.map(r=>r.nome).join(', ');
-    mov = {
-      id: 'm'+Date.now()+Math.floor(Math.random()*1000), tipo: 'lavorato',
-      data: document.getElementById('gl-data').value,
-      nome,
-      totale,
-      fatturato: document.getElementById('gl-fatt').value,
-      extra: {
-        cliente: document.getElementById('gl-cliente').value.trim(),
-        nfatt: document.getElementById('gl-nfatt').value.trim(),
-        righe
-      }
-    };
-    document.getElementById('gl-cliente').value = '';
-    document.getElementById('gl-nfatt').value = '';
-    document.getElementById('gl-totale').value = '';
     document.querySelectorAll('#gl-righe-wrap .ga-riga').forEach((r,i) => {
       if(i > 0){ r.remove(); }
       else {
@@ -1876,19 +1844,22 @@ function saveMovimento(tipo, btnEl){
     gaRigaCount = 1;
   }
 
-  if(!mov) return;
-  gMovimenti.unshift(mov);
+  if(mov) movs.push(mov);
+  if(!movs.length) return;
+  movs.slice().reverse().forEach(m => gMovimenti.unshift(m));
   localStorage.setItem('mt_movimenti', JSON.stringify(gMovimenti));
   renderMovimenti();
   aggiornaKPI();
 
   // Salva su Sheets (async, non blocca UI)
-  sheetsSaveMovimento(mov).then(ok => {
-    if (!ok && APPS_SCRIPT_URL) {
-      // Mostra avviso non-bloccante
-      const el = document.getElementById('sync-status');
-      if (el) el.title = 'Dati salvati localmente, non sul cloud';
-    }
+  movs.forEach(m => {
+    sheetsSaveMovimento(m).then(ok => {
+      if (!ok && APPS_SCRIPT_URL) {
+        // Mostra avviso non-bloccante
+        const el = document.getElementById('sync-status');
+        if (el) el.title = 'Dati salvati localmente, non sul cloud';
+      }
+    });
   });
 
   // feedback visivo (usa il riferimento diretto al bottone: su iOS il tap non dà sempre il focus)
